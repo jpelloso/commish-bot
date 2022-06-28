@@ -4,15 +4,22 @@ from yahoo_oauth import OAuth2
 
 
 import discord
+import os
 import logging
 import urllib3
 import yahoo_api
 
 
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
+
+# TODO: quotation mark consistency
+# string consistency
+# imports orders
+# error messages (PLayer not found etc.)
+# exceptions
 
 # Decorators
 
@@ -29,7 +36,7 @@ def oauth(func):
 
 class Yahoo(commands.Cog):
 
-    error_message = "I'm having trouble getting that right now please try again later"
+    error_message = "I'm having trouble getting that right now, please try again later"
 
     def __init__(self, bot, KEY, SECRET, guilds):
         self.bot = bot
@@ -39,32 +46,130 @@ class Yahoo(commands.Cog):
         self.guilds = guilds
         self.yahoo_api = None
     
-    
-    @commands.command("standings")
+    @commands.command('standings')
     @oauth
-    async def standings(self,ctx):
-        logger.info("standings called")
+    async def standings(self, ctx):
+        logger.info('standings called')
         embed = self.yahoo_api.get_standings()
         if embed:
             await ctx.send(embed=embed)
         else:
             await ctx.send(self.error_message)
 
-    @commands.command("roster")
+    @commands.command('history')
     @oauth
-    async def roster(self, ctx, *, content:str):
-        logger.info("roster called")
-        roster = self.yahoo_api.get_roster(content)
-        if roster:
-            await ctx.send(embed=roster)
+    async def history(self, ctx, *, content:int):
+        logger.info('history called')
+        msg, embed = self.yahoo_api.get_history(content)
+        if msg or embed:
+            await ctx.send(content=msg, embed=embed)
         else:
             await ctx.send(self.error_message)
-        
 
-    @commands.command("trade")
+# trade_deadline (settings)
+# playoffs (settings_)
+
+# playoff_schedule
+
+    @commands.command('hall_of_fame')
+    @oauth
+    async def hall_of_fame(self, ctx):
+        logger.info('hall_of_fame called')
+        embed = self.yahoo_api.get_hall_of_fame()
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(self.error_message)
+
+    @commands.command('hall_of_shame')
+    @oauth
+    async def hall_of_shame(self, ctx):
+        logger.info('hall_of_shame called')
+        embed = self.yahoo_api.get_hall_of_shame()
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(self.error_message)
+    
+# array of responses
+# random number to determine which reponse
+# 1. looks like someone is talking themselves up.. get matchup and put them in their place.
+
+    # @commands.command('first_place')
+    # @oauth
+    # async def first_place(self, ctx):
+    #     logger.info('first_place called')
+    #     content = self.yahoo_api.get_first_place()
+    #     if content:
+    #         await ctx.send(content=content)
+    #     else:
+    #         await ctx.send(self.error_message)
+
+# 1. Directions and hours for PJs
+    # @commands.command('last_place')
+    # @oauth
+    # async def standings(self, ctx):
+    #     logger.info('last_place called')
+    #     content = self.yahoo_api.get_last_place()
+    #     if content:
+    #         await ctx.send(content=content)
+    #     else:
+    #         await ctx.send(self.error_message)
+
+    @commands.command('matchups')
+    @oauth
+    async def matchups(self, ctx):
+        logger.info('matchups called')
+        embed = self.yahoo_api.get_matchups()
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(self.error_message)
+
+    @commands.command('roster')
+    @oauth
+    async def roster(self, ctx, *, content:str):
+        logger.info('roster called')
+        embed = self.yahoo_api.get_roster(content)
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            emsg = "Sorry, I couldn't find a team with name '_{}_'. This command is case-sensitive. Please make sure you have the team name spelled correctly and try again.".format(content)
+            await ctx.send(emsg)
+        
+    @commands.command('player_details')
+    @oauth
+    async def player_details(self, ctx,  *, content:str):
+        logger.info('player_details called')
+        embed = self.yahoo_api.get_player_details(content)
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            emsg = "Sorry, I couldn't find a player with name '_{}_'. This command is case-sensitive. Please make sure you have the player name spelled correctly and try again.".format(content)
+            await ctx.send(emsg)
+
+    @commands.command('keeper')
+    @oauth
+    async def keeper(self, ctx,  *, content:str):
+        logger.info('keeper called')
+        msg = self.yahoo_api.get_keeper_value(content)
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
+
+# settings()
+# 'playoff_start_week': '22',
+# 'end_week': '24'
+# 'end_date': '2020-09-20',
+# 'trade_end_date': '2020-08-09',
+# 'num_playoff_teams': '6',
+#  'num_playoff_consolation_teams': 6,
+
+    @commands.command('trade')
     @oauth
     async def trade(self, ctx):
-        logger.info("trade called")
+        logger.info('trade called')
         latest_trade = self.yahoo_api.get_latest_trade()
 
         if latest_trade == None:
@@ -110,24 +215,3 @@ class Yahoo(commands.Cog):
             no_emoji = '\U0001F6AB'        
             await msg.add_reaction(yes_emoji)
             await msg.add_reaction(no_emoji)
-
-
-    @commands.command("player_details")
-    @oauth
-    async def player_details(self, ctx,  *, content:str):
-        logger.info("player_details called")
-        details = self.yahoo_api.get_player_details(content)
-        if details:
-            await ctx.send(embed=details['embed'])
-        else:
-            await ctx.send("Player not found")
-
-
-    @commands.command("matchups")
-    @oauth
-    async def matchups(self,ctx):
-        embed = self.yahoo_api.get_matchups()
-        if embed:
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(self.error_message)

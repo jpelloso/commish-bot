@@ -31,7 +31,7 @@ with open(os.path.dirname(dir_path) + '/config/guilds.json', 'r+') as f:
     oauth = OAuth2(consumer_key=settings.yahoo_key, consumer_secret=settings.yahoo_secret, browser_callback=False)
 
     guild_details = {
-        guild:{
+        guild: {
             "access_token": oauth.access_token,
             "guid": oauth.guid,
             "refresh_token": oauth.refresh_token,

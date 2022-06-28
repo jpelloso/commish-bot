@@ -1,12 +1,10 @@
 import logging
-import time
 import json
-
+import time
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.disable(logging.DEBUG)
-
 
 class GuildsDatastore():
 
@@ -14,7 +12,7 @@ class GuildsDatastore():
         self.path_to_datastore = path_to_datastore
         self.refreshDatastore()
 
-    def getGuildDetails(self,guild_id):
+    def getGuildDetails(self, guild_id):
         return self.guilds[str(guild_id)]
 
     def refreshDatastore(self):

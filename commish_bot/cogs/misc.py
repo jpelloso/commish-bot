@@ -1,23 +1,16 @@
-from discord.ext import commands
-
-
-import discord
 import logging
+from discord.ext import commands
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
 class Misc(commands.Cog):
     
-    def __init__(self, bot, guilds):
+    def __init__(self, bot):
         self.bot = bot
-        self.guilds = guilds
 
-    @commands.command("RIP")
-    async def RIP(self, ctx, *args):
-        logger.info("RIP called")
-        league_details = self.guilds.getGuildDetails(ctx.guild.id)
-        respected = args[0] if args else "Commish"
-        message = "RIP, " + respected
-        embed = discord.Embed(title='Title', description='Desc', color=0xeee657)
-        await ctx.send(content=message,embed=embed)
+    @commands.command('praise')
+    async def praise(self, ctx, *args):
+        logger.info('praise called')
+        content = 'Wow, I think JP is doing a great job as commissioner! Keep up the good work boss!'
+        await ctx.send(content=content)

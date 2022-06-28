@@ -3,6 +3,17 @@
 
 A Yahoo Fantasy sports bot for Discord.
 
+## TODO
+- [ ] standings <year> (get player name, not team name)
+- [ ] champion <year>
+- [ ] champions
+- [ ] loser <year> 
+- [ ] losers
+- [ ] keeper (draft results)
+- [ ] last_place
+- [ ] rules
+- [ ] Update player details with %owned and status
+
 ## Commands
     $ping                           - Gives the latency of the bot
     $standings                      - Returns the current standings of the current league
