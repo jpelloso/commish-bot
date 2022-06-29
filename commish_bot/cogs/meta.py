@@ -30,7 +30,6 @@ class Meta(commands.Cog):
         embed.add_field(name='`$trade`', value='Create a poll for the latest trade for league approval', inline=False)
         embed.add_field(name='`$trade_deadline`', value='Return the last possible day for trades to be processed', inline=False)
         embed.add_field(name='`$playoffs`', value='Return details about the playoffs for the current season', inline=False)
-        embed.add_field(name='`$rules`', value='Return the Yahoo! league rules and settings', inline=False)
         await ctx.send(embed=embed)
 
     @commands.command('ping')

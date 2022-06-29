@@ -66,11 +66,6 @@ class Yahoo(commands.Cog):
         else:
             await ctx.send(self.error_message)
 
-# trade_deadline (settings)
-# playoffs (settings_)
-
-# playoff_schedule
-
     @commands.command('hall_of_fame')
     @oauth
     async def hall_of_fame(self, ctx):
@@ -157,6 +152,29 @@ class Yahoo(commands.Cog):
             await ctx.send(msg)
         else:
             await ctx.send(self.error_message)
+
+    @commands.command('playoffs')
+    @oauth
+    async def playoffs(self, ctx):
+        logger.info('playoffs called')
+        msg = self.yahoo_api.get_playoffs_details()
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
+
+    @commands.command('trade_deadline')
+    @oauth
+    async def trade_deadline(self, ctx):
+        logger.info('trade_deadline called')
+        msg = self.yahoo_api.get_trade_deadline()
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
+
+# trade_deadline (settings)
+# playoffs (settings_)
 
 # settings()
 # 'playoff_start_week': '22',
