@@ -10,7 +10,7 @@ from cogs.yahoo import Yahoo
 from datastore import GuildsDatastore
 from config import settings
 
-logger = logging.getLogger('commish_bot.py')
+logger = logging.getLogger('bot.py')
 logger.setLevel(settings.loglevel)
 
 bot = commands.Bot(command_prefix='$', description='')
