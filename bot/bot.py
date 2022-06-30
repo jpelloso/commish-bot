@@ -28,8 +28,17 @@ async def on_command_error(ctx, error):
         content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
         await ctx.send(content=content)
 
+if os.environ(['HEROKU_DEPLOYMENT']):
+    discord_token =  os.environ(['DISCORD_TOKEN'])
+    yahoo_key = os.environ(['YAHOO_KEY'])
+    yahoo_secret = os.environ(['YAHOO_SECRET'])
+else:
+    discord_token = settings.discord_token
+    yahoo_key = settings.yahoo_key
+    yahoo_secret = settings.yahoo_secret
+
 guilds = GuildsDatastore(settings.guilds_datastore)
 bot.add_cog(Meta(bot))
 bot.add_cog(Misc(bot))
-bot.add_cog(Yahoo(bot, settings.yahoo_key, settings.yahoo_secret, guilds))
-bot.run(settings.discord_token, bot=True, reconnect=True)
+bot.add_cog(Yahoo(bot, yahoo_key, yahoo_secret, guilds))
+bot.run(discord_token, bot=True, reconnect=True)
