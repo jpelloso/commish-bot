@@ -28,6 +28,8 @@ async def on_command_error(ctx, error):
         content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
         await ctx.send(content=content)
 
+# These environment variables get set in Heroku
+# under App > Settings > Config Vars
 if os.environ['HEROKU_DEPLOYMENT']:
     discord_token =  os.environ['DISCORD_TOKEN']
     yahoo_key = os.environ['YAHOO_KEY']
