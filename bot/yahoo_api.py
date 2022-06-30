@@ -12,8 +12,6 @@ logger.setLevel(settings.log_level)
     # TODO:
     #   error messages
     #   exceptions (logging.error)
-    #   first place command
-    #   last place command
 
 class Yahoo:
 

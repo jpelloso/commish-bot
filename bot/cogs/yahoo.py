@@ -16,6 +16,8 @@ logger.setLevel(logging.INFO)
 #   imports orders
 #   error messages (PLayer not found etc.)
 #   exceptions
+# Smart-Ass Bot -> Array of replies, use random int to get reply
+#  Directions to PJs
 
 def oauth(func):
     async def setup(cog, ctx, *, content=None):
@@ -78,31 +80,6 @@ class Yahoo(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send(self.error_message)
-    
-# array of responses
-# random number to determine which reponse
-# 1. looks like someone is talking themselves up.. get matchup and put them in their place.
-
-    # @commands.command('first_place')
-    # @oauth
-    # async def first_place(self, ctx):
-    #     logger.info('first_place called')
-    #     content = self.yahoo_api.get_first_place()
-    #     if content:
-    #         await ctx.send(content=content)
-    #     else:
-    #         await ctx.send(self.error_message)
-
-# 1. Directions and hours for PJs
-    # @commands.command('last_place')
-    # @oauth
-    # async def standings(self, ctx):
-    #     logger.info('last_place called')
-    #     content = self.yahoo_api.get_last_place()
-    #     if content:
-    #         await ctx.send(content=content)
-    #     else:
-    #         await ctx.send(self.error_message)
 
     @commands.command('matchups')
     @oauth
