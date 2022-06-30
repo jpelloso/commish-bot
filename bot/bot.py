@@ -30,7 +30,7 @@ async def on_command_error(ctx, error):
 
 # These environment variables get set in Heroku
 # under App > Settings > Config Vars
-if os.environ['HEROKU_DEPLOYMENT']:
+if os.environ.get('HEROKU_DEPLOYMENT'):
     discord_token =  os.environ['DISCORD_TOKEN']
     yahoo_key = os.environ['YAHOO_KEY']
     yahoo_secret = os.environ['YAHOO_SECRET']
