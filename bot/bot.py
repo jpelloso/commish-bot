@@ -1,24 +1,21 @@
 import os
-
 import logging
-
-
 from discord.ext import commands
 from cogs.meta import Meta
 from cogs.misc import Misc
 from cogs.yahoo import Yahoo
-from datastore import GuildsDatastore
 from config import settings
+from datastore import GuildsDatastore
 
-logger = logging.getLogger('bot.py')
-logger.setLevel(settings.loglevel)
+logger = logging.getLogger(os.path.basename(__file__))
+logger.setLevel(settings.log_level)
 
 bot = commands.Bot(command_prefix='$', description='')
 bot.remove_command('help')
 
 @bot.event
 async def on_ready():
-    logger.info('CommishBot is ready')
+    logger.info('Bot is ready')
 
 @bot.event
 async def on_guild_join(guild):
@@ -27,16 +24,12 @@ async def on_guild_join(guild):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        logger.info('CommandNotFound: {}'.format(error))
+        logger.error('CommandNotFound: {}'.format(error))
         content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
         await ctx.send(content=content)
 
+guilds = GuildsDatastore(settings.guilds_datastore)
 bot.add_cog(Meta(bot))
-
-
-guilds = GuildsDatastore(settings.guilds_datastore_loc)
-
-bot.add_cog(Yahoo(bot, settings.yahoo_key, settings.yahoo_secret, guilds))
 bot.add_cog(Misc(bot))
-
+bot.add_cog(Yahoo(bot, settings.yahoo_key, settings.yahoo_secret, guilds))
 bot.run(settings.discord_token, bot=True, reconnect=True)

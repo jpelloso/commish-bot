@@ -1,18 +1,19 @@
-import logging
 import os
-import re
+import logging
 import discord
 import objectpath
-
-from yahoo_fantasy_api import league, game, team, yhandler
-from datetime import datetime
+from config import settings
+from yahoo_fantasy_api import game
 from cachetools import cached, TTLCache
 
-
 logger = logging.getLogger(os.path.basename(__file__))
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.log_level)
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+    # TODO:
+    #   error messages
+    #   exceptions (logging.error)
+    #   first place command
+    #   last place command
 
 class Yahoo:
 
@@ -46,12 +47,6 @@ class Yahoo:
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_team_manager(self, league, team_key):
         return league.teams()[team_key]['managers'][0]['manager']['nickname']
-
-    # TODO:
-
-    # error messages
-    # exceptions (logging.error)
-
 
     #@cached(cache=TTLCache(maxsize=1024, ttl=600))
     #def is_valid_player(self, league):
@@ -159,15 +154,9 @@ class Yahoo:
     def get_hall_of_shame(self):
         title = ':poop:   Hall of Shame'
         thumbnail_url = 'https://c.tenor.com/qv-F_rn4w1sAAAAC/football-fail.gif'
-        # thumbnail_url = 'https://c.tenor.com/8y4-V8lINJsAAAAC/baker-mayfield-browns.gif'
         index = -1   # last place in league.standings()
         embed = self.get_hall_of(title, thumbnail_url, index)
         return embed
-
-
-# TODO: first place
-# TODO: last place
-
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_matchups(self):

@@ -1,22 +1,21 @@
-import logging
 import json
 import time
+import logging
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# Disable yahoo oauth logger
 logging.disable(logging.DEBUG)
 
 class GuildsDatastore():
 
-    def __init__(self, path_to_datastore):
-        self.path_to_datastore = path_to_datastore
+    def __init__(self, datastore):
+        self.datastore = datastore
         self.refreshDatastore()
 
     def getGuildDetails(self, guild_id):
         return self.guilds[str(guild_id)]
 
     def refreshDatastore(self):
-        with open(self.path_to_datastore, 'r') as f:
+        with open(self.datastore, 'r') as f:
             self.guilds = json.load(f)
             f.close()
         self.last_refresh_timestamp = time.time()

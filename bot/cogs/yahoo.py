@@ -1,27 +1,21 @@
-from discord import embeds
-from discord.ext import commands
-from yahoo_oauth import OAuth2
-
-
-import discord
 import os
 import logging
 import urllib3
+import discord
 import yahoo_api
-
-
+from discord.ext import commands
+from yahoo_oauth import OAuth2
 
 logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
 
-# TODO: quotation mark consistency
-# string consistency
-# imports orders
-# error messages (PLayer not found etc.)
-# exceptions
-
-# Decorators
+# TODO: 
+#   quotation mark consistency
+#   string consistency
+#   imports orders
+#   error messages (PLayer not found etc.)
+#   exceptions
 
 def oauth(func):
     async def setup(cog, ctx, *, content=None):
@@ -32,7 +26,6 @@ def oauth(func):
         else:
             await func(cog, ctx)
     return setup
-
 
 class Yahoo(commands.Cog):
 
@@ -172,17 +165,6 @@ class Yahoo(commands.Cog):
             await ctx.send(msg)
         else:
             await ctx.send(self.error_message)
-
-# trade_deadline (settings)
-# playoffs (settings_)
-
-# settings()
-# 'playoff_start_week': '22',
-# 'end_week': '24'
-# 'end_date': '2020-09-20',
-# 'trade_end_date': '2020-08-09',
-# 'num_playoff_teams': '6',
-#  'num_playoff_consolation_teams': 6,
 
     @commands.command('trade')
     @oauth
