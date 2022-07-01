@@ -69,7 +69,7 @@ class Yahoo:
             for index, team in enumerate(league.standings()):
                 outcomes = team['outcome_totals']
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '**{}. {}** ({})\n'.format(str(index+1), team['name'], record)
+                description += '**{}.** {} ({})\n'.format(str(index+1), team['name'], record)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
         except Exception as e:
@@ -110,8 +110,7 @@ class Yahoo:
                         manager = self.get_team_manager(league, team_key)
                         outcomes = team['outcome_totals']
                         record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                        # TODO: format this to look good...
-                        description += ':{}: {} ... {} ... {}\n'.format(emojis[index], manager, team['name'], record)
+                        description += ':{}: {} - {} ({})\n'.format(emojis[index], team['name'], manager, record)
                     embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
                 content = 'The `$history` command only accepts a single year as an arugment. Please try again.'
@@ -120,7 +119,7 @@ class Yahoo:
         return content, embed
     
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_hall_of(self, title, thumbnail_url, index):
+    def get_overall_history(self, title, thumbnail_url, index):
         try:
             league = self.get_league()
             start = 2017
@@ -131,8 +130,7 @@ class Yahoo:
                 team_key = league.standings()[index]['team_key']
                 team_name = league.standings()[index]['name']
                 manager = self.get_team_manager(league, team_key)
-                # TODO: format this to look good...
-                description += '**{}** - {} ... {}\n'.format(season, manager, team_name)
+                description += '**{}** - {} - {}\n'.format(season, team_name, manager)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             embed.set_thumbnail(url=thumbnail_url)
             return embed
@@ -153,7 +151,7 @@ class Yahoo:
         title = ':poop:   Hall of Shame'
         thumbnail_url = 'https://c.tenor.com/qv-F_rn4w1sAAAAC/football-fail.gif'
         index = -1   # last place in league.standings()
-        embed = self.get_hall_of(title, thumbnail_url, index)
+        embed = self.get_overall_history(title, thumbnail_url, index)
         return embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
@@ -197,10 +195,8 @@ class Yahoo:
         if team:
             title = "{} - Roster".format(team_name)
             description = ''
-            for index, player in enumerate(team.roster(league.current_week())):
+            for player in team.roster(league.current_week()):
                 description += '**{}** - {}'.format(player['selected_position'], player['name']) 
-                if index == 10:
-                    description += self.embed_divider
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
         else:
@@ -216,31 +212,26 @@ class Yahoo:
             logger.error(e)
             return None
     
-
-
-
-
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_details(self, player_name):
         try:
             league = self.get_league()
-            #player = league.player_details(player_name)[0]
-            player = self.get_league(2021).player_details(player_name)[0]
+            player = league.player_details(player_name)[0]
             title = player['name']['full']
             player_id_list = [int(player['player_id'])]
             description = '#{} - {}'.format(player['uniform_number'], player['editorial_team_full_name'])
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             embed.add_field(name='Postion', value=player['primary_position'])
             if 'bye_weeks' in player:
-                embed.add_field(name='Bye', value=player['bye_weeks']['week'])
+                embed.add_field(name='Bye Week', value=player['bye_weeks']['week'])
             else:
                 embed.add_field(name='Bye', value='NA')
             embed.add_field(name='Total Points', value=player['player_points']['total'])
+            embed.add_field(name='% Rostered', value='{}%'.format(league.percent_owned(player_id_list)[0]['percent_owned']))
             if 'status' in player:
                 embed.add_field(name='Status', value=player['status'])
             else:
                 embed.add_field(name='Status', value='Healthy')
-            embed.add_field(name='% Rostered', value='{}%'.format(league.percent_owned(player_id_list)[0]['percent_owned']))
             embed.add_field(name='Keeper', value=player['is_keeper']['kept'])
             embed.add_field(name='Owner', value=self.get_player_owner(player['player_id']))
             embed.set_thumbnail(url=player['image_url'])
@@ -271,10 +262,9 @@ class Yahoo:
 
     # TODO: check if the player is valid first so we can determine if the player was not found or if the player exists but was not drafted
     # TODO: get season - 3 and check is_keeper status and increment for every time True to determine validity of keeper
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    @cached(cache=TTLCache(maxsize=2048, ttl=1200))
     def get_keeper_value(self, keeper):
         try:
-            #league = self.get_league(2021)
             league = self.get_league()
             draft_results = self.get_draft_results(league)
             pick = None
@@ -292,9 +282,9 @@ class Yahoo:
 
             if drafted:
                 if round == 1 or round == 2:
-                    content = '**{}** was drafted at **pick #{}** in **round {}**. He is not an eligible keeper.'.format(keeper, pick, round)
+                    content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(keeper, pick, round)
                 else:
-                    content = '**{}** was drafted at **pick #{}** in **round {}**. He would cost a pick in **_round {}_** to keep for next season.'.format(keeper, pick, round, round - 1)
+                    content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
             else:
                 content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
 
@@ -346,7 +336,7 @@ class Yahoo:
             playoff_end_week = league.settings()['end_week']
             playoff_end_date = league.settings()['end_date']
             num_playoff_teams = league.settings()['num_playoff_teams']
-            content = 'The playoffs for the {} season will start in week {} with the championship in week {} ending on {} with {} teams fighting to be named champion.'.format(season, playoff_start_week, playoff_end_week, playoff_end_date, num_playoff_teams)
+            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the'.format(season, playoff_start_week, playoff_end_week, num_playoff_teams)
             return content
         except Exception as e:
             logger.error(e)
