@@ -69,7 +69,7 @@ class Yahoo:
             for index, team in enumerate(league.standings()):
                 outcomes = team['outcome_totals']
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '**{}.** {} ({})\n'.format(str(index+1), team['name'], record)
+                description += '{}. {} ({})\n'.format(str(index+1), team['name'], record)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
         except Exception as e:
@@ -258,11 +258,9 @@ class Yahoo:
             return None
 
 
-
-
     # TODO: check if the player is valid first so we can determine if the player was not found or if the player exists but was not drafted
-    # TODO: get season - 3 and check is_keeper status and increment for every time True to determine validity of keeper
-    @cached(cache=TTLCache(maxsize=2048, ttl=1200))
+    # TODO: get season - 3 and check is_keeper status and increment for every time True to determine validity of keeper --> might be too much for rate limit.
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
@@ -271,32 +269,34 @@ class Yahoo:
             round = None
             drafted = False
             content = None
-            for result in draft_results:
-
+        except Exception as e:
+            logger.error(e)
+            return None
+        
+        # Widen the scope of the try catch so we try/catch the player details
+        # Draft results contain a player/player id that is no longer valid in 
+        # Yahoo! sports and causes an exception. If we encounter a case like that
+        # pass and continue on looking at the draft results.
+        for result in draft_results:
+            try:
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
                 if drafted_player == keeper:
                     pick = int(result['pick'])
                     round = int(result['round'])
                     drafted = True
                     break
+            except:
+                pass
 
-            if drafted:
-                if round == 1 or round == 2:
-                    content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(keeper, pick, round)
-                else:
-                    content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
+        if drafted:
+            if round == 1 or round == 2:
+                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(keeper, pick, round)
             else:
-                content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
+                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
+        else:
+            content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
 
-            return content
-
-                    # result['round'] result['pick'] result['team_key']
-
-
-        except Exception as e:
-            logger.info("Error while fetching team from league: {}".format(self.league_id))
-            logger.info(e)
-            return None
+        return content
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_results(self, league):
