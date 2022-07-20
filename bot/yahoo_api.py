@@ -1,4 +1,5 @@
 import os
+import time
 import logging
 import discord
 import objectpath
@@ -279,6 +280,7 @@ class Yahoo:
         # pass and continue on looking at the draft results.
         for result in draft_results:
             try:
+                time.sleep(1)
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
                 if drafted_player == keeper:
                     pick = int(result['pick'])
