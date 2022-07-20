@@ -279,9 +279,10 @@ class Yahoo:
         # Yahoo! sports and causes an exception. If we encounter a case like that
         # pass and continue on looking at the draft results.
         for result in draft_results:
+            time.sleep(10)
             try:
-                time.sleep(1)
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
+                print(drafted_player)
                 if drafted_player == keeper:
                     pick = int(result['pick'])
                     round = int(result['round'])
