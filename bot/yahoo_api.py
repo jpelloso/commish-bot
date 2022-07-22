@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import logging
 import discord
@@ -47,11 +48,13 @@ class Yahoo:
     def get_team_manager(self, league, team_key):
         return league.teams()[team_key]['managers'][0]['manager']['nickname']
 
-    #@cached(cache=TTLCache(maxsize=1024, ttl=600))
-    #def is_valid_player(self, league):
-
-    #@cached(cache=TTLCache(maxsize=1024, ttl=600))
-    #def is_valid_team(self, league):
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def is_valid_player(self, league, player_name):
+        player = league.player_details(player_name)
+        if player:
+            return True
+        else:
+            return False
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def is_integer(self, value):
@@ -144,7 +147,7 @@ class Yahoo:
         title = ':trophy:   Hall of Fame'
         thumbnail_url = 'https://c.tenor.com/cpKE-dqxY6gAAAAC/tom-brady-superbowl51.gif'
         index = 0   # first place in league.standings()
-        embed = self.get_hall_of(title, thumbnail_url, index)
+        embed = self.get_overall_history(title, thumbnail_url, index)
         return embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
@@ -189,6 +192,7 @@ class Yahoo:
             logger.error(e)
             return None
 
+    # TODO: check team name and if not valid return a list of team names/managers
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_roster(self, team_name):
         league = self.get_league()
@@ -203,6 +207,9 @@ class Yahoo:
         else:
             return None
 
+    # league.teams().items()
+    # team['name'], team['managers'][0]['manager']['nickname']
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_team(self, league, team_name):
         try:
@@ -213,6 +220,7 @@ class Yahoo:
             logger.error(e)
             return None
     
+    # TODO: check player name and if not valid return invalid player
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_details(self, player_name):
         try:
@@ -226,7 +234,7 @@ class Yahoo:
             if 'bye_weeks' in player:
                 embed.add_field(name='Bye Week', value=player['bye_weeks']['week'])
             else:
-                embed.add_field(name='Bye', value='NA')
+                embed.add_field(name='Bye Week', value='NA')
             embed.add_field(name='Total Points', value=player['player_points']['total'])
             embed.add_field(name='% Rostered', value='{}%'.format(league.percent_owned(player_id_list)[0]['percent_owned']))
             if 'status' in player:
@@ -259,8 +267,7 @@ class Yahoo:
             return None
 
 
-    # TODO: check if the player is valid first so we can determine if the player was not found or if the player exists but was not drafted
-    # TODO: get season - 3 and check is_keeper status and increment for every time True to determine validity of keeper --> might be too much for rate limit.
+    # TODO: check if player is valid before going through draft results
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
@@ -279,10 +286,11 @@ class Yahoo:
         # Yahoo! sports and causes an exception. If we encounter a case like that
         # pass and continue on looking at the draft results.
         for result in draft_results:
-            time.sleep(10)
+            time.sleep(0.5)
             try:
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
-                print(drafted_player)
+                keeper = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
+                drafted_player = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
                 if drafted_player == keeper:
                     pick = int(result['pick'])
                     round = int(result['round'])
@@ -297,7 +305,10 @@ class Yahoo:
             else:
                 content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
         else:
-            content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
+            if self.is_valid_player(league, keeper):
+                content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
+            else:
+                content = 'Sorry, I couldn\'t find a player with name *{}*. Please check the player name and try again.'.format(keeper)
 
         return content
 
@@ -313,10 +324,6 @@ class Yahoo:
             league = self.get_league(season)
             draft_results = league.draft_results()
             return draft_results
-
-
-
-
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_trade_deadline(self):
@@ -339,7 +346,7 @@ class Yahoo:
             playoff_end_week = league.settings()['end_week']
             playoff_end_date = league.settings()['end_date']
             num_playoff_teams = league.settings()['num_playoff_teams']
-            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the'.format(season, playoff_start_week, playoff_end_week, num_playoff_teams)
+            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the chance to be named champion.'.format(season, playoff_start_week, playoff_end_week, num_playoff_teams)
             return content
         except Exception as e:
             logger.error(e)
