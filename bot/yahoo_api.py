@@ -182,6 +182,8 @@ class Yahoo:
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_roster(self, team_name):
         try:
+            content = None
+            embed = None
             league = self.get_league()
             team = self.get_team(league, team_name)
             if team:
@@ -209,9 +211,9 @@ class Yahoo:
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_details(self, player_name):
         try:
-            league = self.get_league()
             content = None
             embed = None
+            league = self.get_league()
             if self.is_valid_player(league, player_name):
                 player = league.player_details(player_name)[0]
                 title = player['name']['full']
