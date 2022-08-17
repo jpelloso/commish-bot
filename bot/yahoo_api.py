@@ -291,7 +291,7 @@ class Yahoo:
                 content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(drafted_player, pick, round, round - 1)
         else:
             if self.is_valid_player(league, keeper):
-                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(drafted_player)
+                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
             else:
                 content = 'Sorry, I couldn\'t find a player with name **{}**. Please check the player name and try again.'.format(keeper)
 
