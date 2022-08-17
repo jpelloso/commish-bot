@@ -112,30 +112,3 @@ You can find your league's ID under the settings page of your league
     ### With Docker
         make build-docker
         make run-docker
-
-## Command Examples
-
-### $player_details Rashaad Penny
-
-![player-details](/assests/player_details.PNG)
-
-
-### $roster Lamb Chop's Play-Along
-
-![roster](/assests/roster.PNG)
-
-
-### $standings
-
-![standings](/assests/standings.PNG)
-
-
-### $matchups
-
-![matchups](/assests/matchups.PNG)
-
-
-### $trade
-
-![trade](/assests/trade.PNG)
-

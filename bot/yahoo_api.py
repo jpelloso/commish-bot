@@ -187,13 +187,13 @@ class Yahoo:
             league = self.get_league()
             team = self.get_team(league, team_name)
             if team:
-                title = "{} - Roster".format(team_name)
+                title = '{} - Roster'.format(team_name)
                 description = ''
                 for player in team.roster(league.current_week()):
                     description += '**{}** - {}'.format(player['selected_position'], player['name'])
                 embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
-                content = 'Sorry, I couldn\'t find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.'.format(team_name)
+                content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
         except Exception as e:
             logger.error(e)
         return content, embed
@@ -235,7 +235,7 @@ class Yahoo:
                 embed.add_field(name='Owner', value=self.get_player_owner(player['player_id']))
                 embed.set_thumbnail(url=player['image_url'])
             else:
-                content = 'Sorry, I couldn\'t find a player with the name **{}**. Please check the player name and try again.'.format(player_name)
+                content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(player_name)
         except Exception as e:
             logger.error(e)
         return content, embed
@@ -254,7 +254,7 @@ class Yahoo:
                 }
                 return ownership_map.get(player_ownership['ownership_type'], "")
         except Exception:
-            logger.exception("Error while fetching ownership for player id: {} in league {}".format(player_id, self.league_id))
+            logger.exception('Error while fetching ownership for player id: {} in league {}'.format(player_id, self.league_id))
             return None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
@@ -293,7 +293,7 @@ class Yahoo:
             if self.is_valid_player(league, keeper):
                 content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
             else:
-                content = 'Sorry, I couldn\'t find a player with name **{}**. Please check the player name and try again.'.format(keeper)
+                content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper)
 
         return content
 
