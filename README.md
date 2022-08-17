@@ -3,7 +3,31 @@
 
 A Yahoo Fantasy sports bot for Discord.
 
-See Castle-in-the-air for Heroku commands and readme
+See castle-in-the-air README for Heroku commands
+
+Useful Discord ctx functions:
+await message.channel.send("Please go to <#channelID>")
+message = await ctx.send('test')
+await message.add_reaction(emoji)
+@client.command()
+async def w(ctx):
+    if ctx.channel.id == 775491463940669480:
+        await ctx.send("hello)
+@bot.command(pass_context=True)
+async def name(ctx):
+    await bot.say("{} is your name".format(ctx.message.author.mention))
+
+@bot.command(pass_context=True)
+async def myid(ctx):
+    await bot.say("{} is your id".format(ctx.message.author.id))
+
+// must use Cog.listener() for non-command actions in cogs
+@commands.Cog.listener()
+    async def on_message(self, message):
+        print(message)
+
+if message.content.startswith('!hello'):
+            await message.reply('Hello!', mention_author=True)
 
 ## Commands
     $ping                           - Gives the latency of the bot
@@ -36,7 +60,7 @@ In order to properly configure your bot you will need the following:
 1. Open the discord web app  - https://discord.com/app
 2. Navigate to your guild
 3. Copy the guild ID from the url
-   ``` 
+   ```
    https://discord.com/channels/[guild-id-is-here]/12345678910
    ```
 
@@ -47,7 +71,7 @@ In order to properly configure your bot you will need the following:
 2. Fill out the form as shown below, you can provide your own values for Application Name,  Description, and Homepage URL. Once complete click the "Create App" button
    ![yahoo-app-details](/assests/yahoo-app-details.png)
 3. Copy the Client ID and Client Secret values
-   ![yahoo-app-secrets](/assests/yahoo-app-secrets.png) 
+   ![yahoo-app-secrets](/assests/yahoo-app-secrets.png)
 
 ### Yahoo League ID
 
@@ -56,7 +80,7 @@ You can find your league's ID under the settings page of your league
 
 ## Install
 
-1. Clone this repository 
+1. Clone this repository
 
         git clone git@github.com:jpelloso/commish-bot.git
         cd commish-bot
@@ -81,7 +105,7 @@ You can find your league's ID under the settings page of your league
       make configure
       ```
 
-3. Run the bot. 
+3. Run the bot.
 
     ### On local machine
         make run

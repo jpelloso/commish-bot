@@ -193,7 +193,7 @@ class Yahoo:
                     description += '**{}** - {}'.format(player['selected_position'], player['name'])
                 embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
-                content = 'Sorry, I couldn\'t find a team with name **{}**. Team names are case sensitive. Please check the team name and try again.'.format(team_name)
+                content = 'Sorry, I couldn\'t find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.'.format(team_name)
         except Exception as e:
             logger.error(e)
         return content, embed
@@ -286,12 +286,12 @@ class Yahoo:
 
         if drafted:
             if round == 1 or round == 2:
-                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(keeper, pick, round)
+                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(drafted_player, pick, round)
             else:
-                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
+                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(drafted_player, pick, round, round - 1)
         else:
             if self.is_valid_player(league, keeper):
-                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
+                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(drafted_player)
             else:
                 content = 'Sorry, I couldn\'t find a player with name **{}**. Please check the player name and try again.'.format(keeper)
 

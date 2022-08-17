@@ -1,7 +1,6 @@
 import os
 import logging
 import urllib3
-import discord
 import yahoo_api
 from discord.ext import commands
 from yahoo_oauth import OAuth2
@@ -12,7 +11,7 @@ logger.setLevel(logging.INFO)
 def oauth(func):
     async def setup(cog, ctx, *, content=None):
         league_details = cog.guilds.getGuildDetails(ctx.guild.id)
-        cog.yahoo_api = yahoo_api.Yahoo(OAuth2(cog.KEY, cog.SECRET, **league_details), league_details["league_id"], league_details["league_type"])
+        cog.yahoo_api = yahoo_api.Yahoo(OAuth2(cog.KEY, cog.SECRET, **league_details), league_details['league_id'], league_details['league_type'])
         if content:
             await func(cog, ctx, content=content)
         else:
