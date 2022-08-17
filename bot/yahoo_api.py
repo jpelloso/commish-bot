@@ -11,13 +11,6 @@ from cachetools import cached, TTLCache
 logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(settings.log_level)
 
-    # TODO:
-    #   error messages
-    #   exceptions (logging.error)
-    # chirp
-    # praise
-    # goodbot
-
 class Yahoo:
 
     oauth = None
@@ -36,13 +29,13 @@ class Yahoo:
         if year:
             league_id = gm.league_ids(int(year))[0]
         else:
-            league_id = '{}.l.{}'.format(gm.game_id(), self.league_id)        
+            league_id = '{}.l.{}'.format(gm.game_id(), self.league_id)
         return gm.to_league(league_id)
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_league_season(self, league):
         return int(league.settings()['season'])
-    
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_league_name(self, league):
         return league.settings()['name']
@@ -113,9 +106,9 @@ class Yahoo:
             else:
                 content = 'The `$history` command only accepts a single year as an arugment. Please try again.'
         except Exception as e:
-            logger.error(e)    
+            logger.error(e)
         return content, embed
-    
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_overall_history(self, title, thumbnail_url, index):
         try:
@@ -186,23 +179,22 @@ class Yahoo:
             logger.error(e)
             return None
 
-    # TODO: check team name and if not valid return a list of team names/managers
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_roster(self, team_name):
-        league = self.get_league()
-        team = self.get_team(league, team_name)
-        if team:
-            title = "{} - Roster".format(team_name)
-            description = ''
-            for player in team.roster(league.current_week()):
-                description += '**{}** - {}'.format(player['selected_position'], player['name']) 
-            embed = discord.Embed(title=title, description=description, color=0xeee657)
-            return embed
-        else:
-            return None
-
-    # league.teams().items()
-    # team['name'], team['managers'][0]['manager']['nickname']
+        try:
+            league = self.get_league()
+            team = self.get_team(league, team_name)
+            if team:
+                title = "{} - Roster".format(team_name)
+                description = ''
+                for player in team.roster(league.current_week()):
+                    description += '**{}** - {}'.format(player['selected_position'], player['name'])
+                embed = discord.Embed(title=title, description=description, color=0xeee657)
+            else:
+                content = 'Sorry, I couldn\'t find a team with name **{}**. Team names are case sensitive. Please check the team name and try again.'.format(team_name)
+        except Exception as e:
+            logger.error(e)
+        return content, embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_team(self, league, team_name):
@@ -213,36 +205,39 @@ class Yahoo:
         except Exception as e:
             logger.error(e)
             return None
-    
-    # TODO: check player name and if not valid return invalid player
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_details(self, player_name):
         try:
             league = self.get_league()
-            player = league.player_details(player_name)[0]
-            title = player['name']['full']
-            player_id_list = [int(player['player_id'])]
-            description = '#{} - {}'.format(player['uniform_number'], player['editorial_team_full_name'])
-            embed = discord.Embed(title=title, description=description, color=0xeee657)
-            embed.add_field(name='Postion', value=player['primary_position'])
-            if 'bye_weeks' in player:
-                embed.add_field(name='Bye Week', value=player['bye_weeks']['week'])
+            content = None
+            embed = None
+            if self.is_valid_player(league, player_name):
+                player = league.player_details(player_name)[0]
+                title = player['name']['full']
+                player_id_list = [int(player['player_id'])]
+                description = '#{} - {}'.format(player['uniform_number'], player['editorial_team_full_name'])
+                embed = discord.Embed(title=title, description=description, color=0xeee657)
+                embed.add_field(name='Postion', value=player['primary_position'])
+                if 'bye_weeks' in player:
+                    embed.add_field(name='Bye Week', value=player['bye_weeks']['week'])
+                else:
+                    embed.add_field(name='Bye Week', value='NA')
+                embed.add_field(name='Total Points', value=player['player_points']['total'])
+                embed.add_field(name='% Rostered', value='{}%'.format(league.percent_owned(player_id_list)[0]['percent_owned']))
+                if 'status' in player:
+                    embed.add_field(name='Status', value=player['status'])
+                else:
+                    embed.add_field(name='Status', value='Healthy')
+                embed.add_field(name='Keeper', value=player['is_keeper']['kept'])
+                embed.add_field(name='Owner', value=self.get_player_owner(player['player_id']))
+                embed.set_thumbnail(url=player['image_url'])
             else:
-                embed.add_field(name='Bye Week', value='NA')
-            embed.add_field(name='Total Points', value=player['player_points']['total'])
-            embed.add_field(name='% Rostered', value='{}%'.format(league.percent_owned(player_id_list)[0]['percent_owned']))
-            if 'status' in player:
-                embed.add_field(name='Status', value=player['status'])
-            else:
-                embed.add_field(name='Status', value='Healthy')
-            embed.add_field(name='Keeper', value=player['is_keeper']['kept'])
-            embed.add_field(name='Owner', value=self.get_player_owner(player['player_id']))
-            embed.set_thumbnail(url=player['image_url'])
-            return embed
+                content = 'Sorry, I couldn\'t find a player with the name **{}**. Please check the player name and try again.'.format(player_name)
         except Exception as e:
             logger.error(e)
-            return None
-    
+        return content, embed
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_owner(self, player_id):
         try:
@@ -252,16 +247,14 @@ class Yahoo:
                 return player_ownership['owner_team_name']
             else:
                 ownership_map = {
-                    "freeagents": "Free Agent",
-                    "waivers":    "On Waviers"      
+                    'freeagents': 'Free Agent',
+                    'waivers':    'On Waviers'
                 }
                 return ownership_map.get(player_ownership['ownership_type'], "")
         except Exception:
             logger.exception("Error while fetching ownership for player id: {} in league {}".format(player_id, self.league_id))
             return None
 
-
-    # TODO: check if player is valid before going through draft results
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
@@ -274,18 +267,14 @@ class Yahoo:
         except Exception as e:
             logger.error(e)
             return None
-        
-        # Widen the scope of the try catch so we try/catch the player details
-        # Draft results contain a player/player id that is no longer valid in 
-        # Yahoo! sports and causes an exception. If we encounter a case like that
-        # pass and continue on looking at the draft results.
+
         for result in draft_results:
-            time.sleep(0.25)
+            time.sleep(0.33)
             try:
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
-                keeper = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
-                drafted_player = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
-                if drafted_player == keeper:
+                keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
+                drafted_player_lower = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
+                if drafted_player_lower == keeper_lower:
                     pick = int(result['pick'])
                     round = int(result['round'])
                     drafted = True
@@ -300,9 +289,9 @@ class Yahoo:
                 content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(keeper, pick, round, round - 1)
         else:
             if self.is_valid_player(league, keeper):
-                content = '{} was not drafted. He would cost a 7th or 8th round to keep for next season.'.format(keeper)
+                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
             else:
-                content = 'Sorry, I couldn\'t find a player with name *{}*. Please check the player name and try again.'.format(keeper)
+                content = 'Sorry, I couldn\'t find a player with name **{}**. Please check the player name and try again.'.format(keeper)
 
         return content
 
@@ -336,8 +325,6 @@ class Yahoo:
         try:
             league = self.get_league()
             season = self.get_league_season(league)
-            print(league.settings())
-            logger.info(league.settings())
             playoff_start_week = league.settings()['playoff_start_week']
             playoff_end_week = league.settings()['end_week']
             num_playoff_teams = league.settings()['num_playoff_teams']
@@ -347,17 +334,3 @@ class Yahoo:
         except Exception as e:
             logger.error(e)
             return None
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_latest_trade(self):
-        try:
-            league = self.get_league()
-            for key, values in league.teams().items():
-                if 'is_owned_by_current_login' in values:
-                    team = league.to_team(key)
-                    accepted_trades = list(filter(lambda d: d['status'] == 'accepted', team.proposed_trades()))
-                    if accepted_trades:
-                        return accepted_trades[0]
-            return
-        except Exception:
-            logger.exception("Error while fetching latest trade")

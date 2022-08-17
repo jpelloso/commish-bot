@@ -6,15 +6,15 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
 class Meta(commands.Cog):
-    
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_command_error(ctx, error):
+    async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandNotFound):
             logger.error('CommandNotFound: {}'.format(error))
-            content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
+            content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands."
             await ctx.send(content=content)
 
     @commands.command('help')
@@ -32,9 +32,9 @@ class Meta(commands.Cog):
         embed.add_field(name='`$roster [team]`', value='Return the roster of a specific team', inline=False)
         embed.add_field(name='`$player_details [player]`', value='Return the details of a specific player', inline=False)
         embed.add_field(name='`$keeper [player]`', value='Return the round drafted of a specific player', inline=False)
-        embed.add_field(name='`$trade`', value='Create a poll for the latest trade for league approval', inline=False)
         embed.add_field(name='`$trade_deadline`', value='Return the last possible day for trades to be processed', inline=False)
         embed.add_field(name='`$playoffs`', value='Return details about the playoffs for the current season', inline=False)
+        embed.add_field(name='`$poll`', value='Create a poll for the league to vote on', inline=False)
         await ctx.send(embed=embed)
 
     @commands.command('ping')

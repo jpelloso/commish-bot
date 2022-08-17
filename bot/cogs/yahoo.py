@@ -9,16 +9,6 @@ from yahoo_oauth import OAuth2
 logger = logging.getLogger(os.path.basename(__file__))
 logger.setLevel(logging.INFO)
 
-
-# TODO: 
-#   quotation mark consistency
-#   string consistency
-#   imports orders
-#   error messages (PLayer not found etc.)
-#   exceptions
-# Smart-Ass Bot -> Array of replies, use random int to get reply
-#  Directions to PJs
-
 def oauth(func):
     async def setup(cog, ctx, *, content=None):
         league_details = cog.guilds.getGuildDetails(ctx.guild.id)
@@ -40,7 +30,7 @@ class Yahoo(commands.Cog):
         self.SECRET = SECRET
         self.guilds = guilds
         self.yahoo_api = None
-    
+
     @commands.command('standings')
     @oauth
     async def standings(self, ctx):
@@ -95,23 +85,21 @@ class Yahoo(commands.Cog):
     @oauth
     async def roster(self, ctx, *, content:str):
         logger.info('roster called')
-        embed = self.yahoo_api.get_roster(content)
-        if embed:
-            await ctx.send(embed=embed)
+        msg, embed = self.yahoo_api.get_roster(content)
+        if msg or embed:
+            await ctx.send(content=msg, embed=embed)
         else:
-            emsg = "Sorry, I couldn't find a team with name '_{}_'. This command is case-sensitive. Please make sure you have the team name spelled correctly and try again.".format(content)
-            await ctx.send(emsg)
-        
+            await ctx.send(self.error_message)
+
     @commands.command('player_details')
     @oauth
     async def player_details(self, ctx,  *, content:str):
         logger.info('player_details called')
-        embed = self.yahoo_api.get_player_details(content)
-        if embed:
-            await ctx.send(embed=embed)
+        msg, embed = self.yahoo_api.get_player_details(content)
+        if msg or embed:
+            await ctx.send(content=msg, embed=embed)
         else:
-            emsg = "Sorry, I couldn't find a player with name '_{}_'. This command is case-sensitive. Please make sure you have the player name spelled correctly and try again.".format(content)
-            await ctx.send(emsg)
+            await ctx.send(self.error_message)
 
     @commands.command('keeper')
     @oauth
@@ -142,20 +130,3 @@ class Yahoo(commands.Cog):
             await ctx.send(msg)
         else:
             await ctx.send(self.error_message)
-
-    @commands.command('trade')
-    @oauth
-    async def trade(self, ctx):
-        logger.info('trade called')
-        
-        confirm_trade_message = "I send you this player"
-        announcement = "There's collusion afoot!\n"
-        embed = discord.Embed(title="The following trade is up for approval:", description=confirm_trade_message, color=0xeee657)
-        embed.add_field(name="I sends: player", value="player1", inline=False)
-        embed.add_field(name="to you for:", value="player2", inline=False)
-        embed.add_field(name="Voting", value=" Click :white_check_mark: for yes, :no_entry_sign: for no")
-        msg = await ctx.send(content=announcement, embed=embed)    
-        yes_emoji = '\U00002705'
-        no_emoji = '\U0001F6AB'        
-        await msg.add_reaction(yes_emoji)
-        await msg.add_reaction(no_emoji)
