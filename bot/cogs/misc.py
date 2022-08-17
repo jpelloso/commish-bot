@@ -60,13 +60,13 @@ class Misc(commands.Cog):
     @commands.command('poll')
     async def poll(self, ctx, *, content:str):
         logger.info('poll called')
-        if ctx.channel.id == 1009118603322335272:
+        if ctx.channel.id == 1009118603322335272 or ctx.channel.id == 991893190221234176:
             creator = ctx.message.author.mention
             title = '{} created a poll'.format(creator)
             embed = discord.Embed(title=title, description=content, color=0xeee657)
             msg = await ctx.send(embed=embed)
-            yes_emoji = '\U00002705'
-            no_emoji = '\U0001F6AB'
+            yes_emoji = '✅'
+            no_emoji = '❌'
             await msg.add_reaction(yes_emoji)
             await msg.add_reaction(no_emoji)
         else:
