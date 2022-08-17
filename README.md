@@ -3,16 +3,7 @@
 
 A Yahoo Fantasy sports bot for Discord.
 
-## TODO
-- [ ] standings <year> (get player name, not team name)
-- [ ] champion <year>
-- [ ] champions
-- [ ] loser <year> 
-- [ ] losers
-- [ ] keeper (draft results)
-- [ ] last_place
-- [ ] rules
-- [ ] Update player details with %owned and status
+See Castle-in-the-air for Heroku commands and readme
 
 ## Commands
     $ping                           - Gives the latency of the bot

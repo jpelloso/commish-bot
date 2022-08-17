@@ -21,23 +21,6 @@ async def on_ready():
 async def on_guild_join(guild):
     logger.info('Joined {}'.format(guild.name))
 
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
-        logger.error('CommandNotFound: {}'.format(error))
-        content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
-        await ctx.send(content=content)
-
-@bot.event
-async def on_message(message):
-    msg = message.content.lower()
-    if msg.contains('good bot'):
-        await message.reply(':grin:')
-    elif msg.contains('bad bot'):
-        await message.reply(':sad:')
-    elif msg.contains('fire pelloso'):
-        await message.reply('Now now, I think Commissioner Pelloso is doing a fine job, calm down.')
-
 # These environment variables get set in Heroku
 # under App > Settings > Config Vars
 if os.environ.get('HEROKU_DEPLOYMENT'):

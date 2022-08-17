@@ -10,6 +10,13 @@ class Meta(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            logger.error('CommandNotFound: {}'.format(error))
+            content = "Sorry, I don't understand that command. Type `$help` to see a list of valid commands." 
+            await ctx.send(content=content)
+
     @commands.command('help')
     async def help(self, ctx):
         logger.info('help called')
