@@ -13,6 +13,9 @@ logger.setLevel(settings.log_level)
     # TODO:
     #   error messages
     #   exceptions (logging.error)
+    # chirp
+    # praise
+    # goodbot
 
 class Yahoo:
 
@@ -47,11 +50,13 @@ class Yahoo:
     def get_team_manager(self, league, team_key):
         return league.teams()[team_key]['managers'][0]['manager']['nickname']
 
-    #@cached(cache=TTLCache(maxsize=1024, ttl=600))
-    #def is_valid_player(self, league):
-
-    #@cached(cache=TTLCache(maxsize=1024, ttl=600))
-    #def is_valid_team(self, league):
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def is_valid_player(self, league, player):
+        player_list = league.player_details(player)
+        if player_list:
+            return True
+        else:
+            return False
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def is_integer(self, value):
@@ -76,15 +81,6 @@ class Yahoo:
         except Exception as e:
             logger.error(e)
             return None
-    
-        # If Discord ever allows inline embeds on mobile, this format is much better
-        # for idx, team in enumerate(league.standings()):
-        #    standings[str(index+1) + '. ' + team['name']] = record
-        # for k,v in standings_dict.items():
-        #    teams += k + '\n'
-        #    records += v + '\n'
-        # embed.add_field(name="Team", value=teams_string)
-        # embed.add_field(name="Record", value=records_string)
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_history(self, past_season):
@@ -144,7 +140,7 @@ class Yahoo:
         title = ':trophy:   Hall of Fame'
         thumbnail_url = 'https://c.tenor.com/cpKE-dqxY6gAAAAC/tom-brady-superbowl51.gif'
         index = 0   # first place in league.standings()
-        embed = self.get_hall_of(title, thumbnail_url, index)
+        embed = self.get_overall_history(title, thumbnail_url, index)
         return embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
@@ -279,7 +275,7 @@ class Yahoo:
         # Yahoo! sports and causes an exception. If we encounter a case like that
         # pass and continue on looking at the draft results.
         for result in draft_results:
-            time.sleep(10)
+            time.sleep(0.25)
             try:
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
                 print(drafted_player)
@@ -335,11 +331,13 @@ class Yahoo:
         try:
             league = self.get_league()
             season = self.get_league_season(league)
+            print(league.settings())
+            logger.info(league.settings())
             playoff_start_week = league.settings()['playoff_start_week']
             playoff_end_week = league.settings()['end_week']
-            playoff_end_date = league.settings()['end_date']
             num_playoff_teams = league.settings()['num_playoff_teams']
-            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the'.format(season, playoff_start_week, playoff_end_week, num_playoff_teams)
+            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the chance to be named champion.'.format(
+                season, playoff_start_week, playoff_end_week, num_playoff_teams)
             return content
         except Exception as e:
             logger.error(e)
