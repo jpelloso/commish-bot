@@ -34,7 +34,7 @@ class Meta(commands.Cog):
         embed.add_field(name='`$keeper [player]`', value='Return the round drafted of a specific player', inline=False)
         embed.add_field(name='`$trade_deadline`', value='Return the last possible day for trades to be processed', inline=False)
         embed.add_field(name='`$playoffs`', value='Return details about the playoffs for the current season', inline=False)
-        embed.add_field(name='`$poll` [prompt]', value='Create a poll for the league to vote on', inline=False)
+        embed.add_field(name='`$poll [prompt]`', value='Create a poll for the league to vote on', inline=False)
         await ctx.send(embed=embed)
 
     @commands.command('ping')
