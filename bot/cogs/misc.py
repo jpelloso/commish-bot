@@ -60,19 +60,20 @@ class Misc(commands.Cog):
     @commands.command('poll')
     async def poll(self, ctx, *, content:str):
         logger.info('poll called')
-        # polls and dev channels only
-        if ctx.channel.id == 1009118603322335272 or ctx.channel.id == 991893190221234176:
+        dev_channel = 991893190221234176
+        polls_channel = 1009118603322335272
+        if ctx.channel.id == dev_channel or ctx.channel.id == polls_channel:
             creator = ctx.message.author
             title = '{} created a poll'.format(creator)
             vote = 'Use the :white_check_mark: and :x: reactions to cast your vote!'
             description = '{}\n\n{}'.format(content, vote)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
+            await ctx.message.delete()
             msg = await ctx.send(embed=embed)
             yes_emoji = '✅'
             no_emoji = '❌'
             await msg.add_reaction(yes_emoji)
             await msg.add_reaction(no_emoji)
-            await ctx.message.delete()
         else:
             msg = 'Sorry, but you are only allowed to create polls in the <#1009118603322335272> channel.'
             await ctx.send(content=msg)
