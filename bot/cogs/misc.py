@@ -1,3 +1,4 @@
+import re
 import logging
 import random
 import discord
@@ -63,9 +64,9 @@ class Misc(commands.Cog):
         dev_channel = 991893190221234176
         polls_channel = 1009118603322335272
         if ctx.channel.id == dev_channel or ctx.channel.id == polls_channel:
-            creator = ctx.message.author
-            title = '{} created a poll'.format(creator)
-            vote = 'Use the :white_check_mark: and :x: reactions to cast your vote!'
+            author = re.sub('\#[0-9]+', '', str(ctx.message.author))
+            title = '{} created a poll'.format(author)
+            vote = 'Click the :white_check_mark: and :x: reactions below to cast your vote!'
             description = '{}\n\n{}'.format(content, vote)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             await ctx.message.delete()
