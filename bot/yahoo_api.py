@@ -190,6 +190,9 @@ class Yahoo:
                 title = '{} - Roster'.format(team_name)
                 description = ''
                 for player in team.roster(league.current_week()):
+                    logger.error(player)
+                    logger.info(player)
+                    print(player)
                     description += '**{}** - {}'.format(player['selected_position'], player['name'])
                 embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
