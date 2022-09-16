@@ -130,11 +130,31 @@ class Yahoo(commands.Cog):
         else:
             await ctx.send(self.error_message)
 
-    @commands.command('waiver_priority')
+    @commands.command('waiver')
     @oauth
-    async def waiver_priority(self, ctx):
-        logger.info('waiver_priority called')
-        msg = self.yahoo_api.get_waiver_priority()
+    async def waiver(self, ctx, *, content:str):
+        logger.info('waiver called')
+        msg = self.yahoo_api.get_waiver_priority(content)
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
+
+    @commands.command('faab')
+    @oauth
+    async def faab(self, ctx, *, content:str):
+        logger.info('faab called')
+        msg = self.yahoo_api.get_faab_balance(content)
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
+
+    @commands.command('manager')
+    @oauth
+    async def manager(self, ctx, *, content:str):
+        logger.info('manager called')
+        msg = self.yahoo_api.get_manager()
         if msg:
             await ctx.send(msg)
         else:
