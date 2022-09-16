@@ -179,20 +179,31 @@ class Yahoo:
             logger.error(e)
             return None
 
+# {'team_key': '414.l.16654.t.1',
+# 'name': 'The Red Rockets',
+# 'team_logos': [
+# {'team_logo': {'size': 'large', 'url': 'https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/e9bc08a037e249e9f3a5d7c7b9392dff97ebbb88171b9a6a90d412029c213096.png'}}],
+# 'waiver_priority': 12,
+# 'faab_balance': '300',
+# 'managers': [{'manager': {'manager_id': '1', 'nickname': 'JP', 'guid': 'S565SCMS2QGIVIEWQNIW5NQQ4Q', 'is_commissioner': '1', 'is_current_login': '1', 'image_url': 'https://s.yimg.com/ag/images/371b15e8-f63f-45ae-985c-1f018e69757b_64sq.jpg', 'felo_score': '771', 'felo_tier': 'gold'}}]}
+
+# $waiver
+# $faab
+# $manager
+# add image url to roster
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_roster(self, team_name):
         try:
             content = None
             embed = None
             league = self.get_league()
-            team = self.get_team(league, team_name)
-            if team:
+            team_dict = self.get_team(league, team_name)
+            if team_dict:
+                team = league.to_team(team_dict['team_key'])
                 title = '{} - Roster'.format(team_name)
                 description = ''
                 for player in team.roster(league.current_week()):
-                    logger.error(player)
-                    logger.info(player)
-                    print(player)
                     description += '**{}** - {}'.format(player['selected_position'], player['name'])
                 embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
@@ -201,12 +212,37 @@ class Yahoo:
             logger.error(e)
         return content, embed
 
+    # returns team dictionary
+    # @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    # def get_team(self, league, team_name):
+    #     try:
+    #         for id, team in league.teams().items():
+    #             if team['name'] == team_name:
+    #                 return league.to_team(id)
+    #     except Exception as e:
+    #         logger.error(e)
+    #         return None
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_team(self, league, team_name):
         try:
+            content = None
             for id, team in league.teams().items():
                 if team['name'] == team_name:
-                    return league.to_team(id)
+                    return team
+        except Exception as e:
+            logger.error(e)
+            return None
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_waiver_priority(self, team_name):
+        try:
+            league = self.get_league()
+            team_dict = self.get_team(league, team_name)
+            if team_dict:
+                waiver = team_dict['waiver_priority']
+                content = "{} has a waiver priority of **{}**".format(waiver)
+            return content
         except Exception as e:
             logger.error(e)
             return None

@@ -129,3 +129,13 @@ class Yahoo(commands.Cog):
             await ctx.send(msg)
         else:
             await ctx.send(self.error_message)
+
+    @commands.command('waiver_priority')
+    @oauth
+    async def trade_deadline(self, ctx):
+        logger.info('waiver called')
+        msg = self.yahoo_api.get_waiver_priority()
+        if msg:
+            await ctx.send(msg)
+        else:
+            await ctx.send(self.error_message)
