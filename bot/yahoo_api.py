@@ -249,7 +249,7 @@ class Yahoo:
             team_dict = self.get_team(league, team_name)
             if team_dict:
                 manager = team_dict['managers'][0]['manager']['nickname']
-                content = "{} has a FAAB balance of **${}**".format(team_name, str(faab))
+                content = "**{}** is the manager of {}".format(str(manager), team_name)
             else:
                 content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
             return content
