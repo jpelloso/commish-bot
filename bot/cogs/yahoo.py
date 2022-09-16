@@ -154,7 +154,7 @@ class Yahoo(commands.Cog):
     @oauth
     async def manager(self, ctx, *, content:str):
         logger.info('manager called')
-        msg = self.yahoo_api.get_manager()
+        msg = self.yahoo_api.get_manager(content)
         if msg:
             await ctx.send(msg)
         else:
