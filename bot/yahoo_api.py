@@ -204,12 +204,14 @@ class Yahoo:
                 title = '{} - Roster'.format(team_name)
                 description = ''
                 for player in team.roster(league.current_week()):
-                    description += '**{}** - {}'.format(player['selected_position'], player['name'])
-                embed = discord.Embed(title=title, description=description, color=0xeee657)
+                    description += '**{}** - {}\n'.format(player['selected_position'], player['name'])
+                embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
+                embed.set_thumbnail(url=team_dict['team_logos'][0]['team_logo']['url'])
             else:
                 content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
         except Exception as e:
             logger.error(e)
+            print(e)
         return content, embed
 
     # returns team dictionary
