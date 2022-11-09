@@ -30,8 +30,6 @@ class Misc(commands.Cog):
             await message.reply('{} {}'.format(reply, emoji), mention_author=False)
         elif 'fire pelloso' in msg:
             await message.reply("C'mon now, I think Commissioner Pelloso is doing a fine job, calm down.", mention_author=False)
-        elif 'when is' in msg or 'when do' in msg or 'what is' in msg or 'what are' in msg:
-            await message.reply("Hey looks like you're maybe asking a question! Have you checked out the <#988308336384557147> and <#988303200551596122> channels for your answer? If your answer cannot be found there, try typing `$help` to see if I can help you find what you need.")
 
     @commands.command('chirp')
     async def chirp(self, ctx, *, content:str):
@@ -66,7 +64,7 @@ class Misc(commands.Cog):
         if ctx.channel.id == dev_channel or ctx.channel.id == polls_channel:
             author = re.sub('\#[0-9]+', '', str(ctx.message.author))
             title = '{} created a poll'.format(author)
-            vote = 'Click the :white_check_mark: and :x: reactions below to cast your vote!'
+            vote = 'Click the :white_check_mark: or :x: reaction below to cast your vote!'
             description = '{}\n\n{}'.format(content, vote)
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             await ctx.message.delete()
