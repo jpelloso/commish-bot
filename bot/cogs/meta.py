@@ -26,8 +26,6 @@ class Meta(commands.Cog):
         embed.add_field(name='`$ping`', value='Return the latency of the bot', inline=False)
         embed.add_field(name='`$standings`', value='Return the standings of the current season', inline=False)
         embed.add_field(name='`$history [year]`', value='Return the standings from a specific season', inline=False)
-        embed.add_field(name='`$hall_of_fame`', value='Return a list of champions from every year', inline=False)
-        embed.add_field(name='`$hall_of_shame`', value='Return a list of losers from every year', inline=False)
         embed.add_field(name='`$matchups`', value='Return the matchups for the current gameweek', inline=False)
         embed.add_field(name='`$roster [team]`', value='Return the roster of a specific team', inline=False)
         embed.add_field(name='`$faab [team]`', value='Return the FAAB balance of a specific team', inline=False)

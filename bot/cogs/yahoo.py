@@ -50,26 +50,6 @@ class Yahoo(commands.Cog):
         else:
             await ctx.send(self.error_message)
 
-    @commands.command('hall_of_fame')
-    @oauth
-    async def hall_of_fame(self, ctx):
-        logger.info('hall_of_fame called')
-        embed = self.yahoo_api.get_hall_of_fame()
-        if embed:
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(self.error_message)
-
-    @commands.command('hall_of_shame')
-    @oauth
-    async def hall_of_shame(self, ctx):
-        logger.info('hall_of_shame called')
-        embed = self.yahoo_api.get_hall_of_shame()
-        if embed:
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(self.error_message)
-
     @commands.command('matchups')
     @oauth
     async def matchups(self, ctx):

@@ -1,6 +1,4 @@
-
 MODULE := bot
-
 TAG := $(shell git describe --tags --always)
 
 showenv:

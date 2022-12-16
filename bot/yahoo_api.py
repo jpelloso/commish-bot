@@ -65,12 +65,17 @@ class Yahoo:
         try:
             league = self.get_league()
             title = 'Standings'
-            description = ''
+            description = '```\n'
+            description += '{:5} {:22} {}\n'.format('Rank', 'Team', 'Record')
             for index, team in enumerate(league.standings()):
                 outcomes = team['outcome_totals']
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '{}. {} ({})\n'.format(str(index+1), team['name'], record)
+                description += '{:5} {:22} {}\n'.format(str(index+1), team['name'], record)
+            description += '\n```'
             embed = discord.Embed(title=title, description=description, color=0xeee657)
+            print(league.standings())
+            logger.info(league.standings())
+            logger.error(league.standings())
             return embed
         except Exception as e:
             logger.error(e)
@@ -108,42 +113,6 @@ class Yahoo:
         except Exception as e:
             logger.error(e)
         return content, embed
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_overall_history(self, title, thumbnail_url, index):
-        try:
-            league = self.get_league()
-            start = 2017
-            end = self.get_league_season(league)
-            description = ''
-            for season in reversed(range(start, end)):
-                league = self.get_league(season)
-                team_key = league.standings()[index]['team_key']
-                team_name = league.standings()[index]['name']
-                manager = self.get_team_manager(league, team_key)
-                description += '**{}** - {} - {}\n'.format(season, team_name, manager)
-            embed = discord.Embed(title=title, description=description, color=0xeee657)
-            embed.set_thumbnail(url=thumbnail_url)
-            return embed
-        except Exception as e:
-            logger.error(e)
-            return None
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_hall_of_fame(self):
-        title = ':trophy:   Hall of Fame'
-        thumbnail_url = 'https://c.tenor.com/cpKE-dqxY6gAAAAC/tom-brady-superbowl51.gif'
-        index = 0   # first place in league.standings()
-        embed = self.get_overall_history(title, thumbnail_url, index)
-        return embed
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_hall_of_shame(self):
-        title = ':poop:   Hall of Shame'
-        thumbnail_url = 'https://c.tenor.com/qv-F_rn4w1sAAAAC/football-fail.gif'
-        index = -1   # last place in league.standings()
-        embed = self.get_overall_history(title, thumbnail_url, index)
-        return embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_matchups(self):
@@ -306,6 +275,11 @@ class Yahoo:
             logger.exception('Error while fetching ownership for player id: {} in league {}'.format(player_id, self.league_id))
             return None
 
+# TODO: can we write draft results to a json file locally and parse that to not exceed rate limits
+# TODO: remove hall of fame and hall of shame commands since they are in league-history channel
+# TODO: standings format update print '{:20}'.format('Record')
+# TODO: roster format updates?
+
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
@@ -352,7 +326,7 @@ class Yahoo:
             draft_results = league.draft_results()
             return draft_results
         except:
-            # maybe we renewed the season and have drafted yet
+            # maybe we renewed the season and haven't drafted yet
             # so we have to get the draft results from the previous season
             season = int(league.settings()['season']) - 1
             league = self.get_league(season)

@@ -38,10 +38,7 @@ class Misc(commands.Cog):
             "I took your mother out for a steak dinner. I didn't call her back the next day, but I did tell her she raised a horrible fantasy football player.",
             "I was going to create a website for his team, but he couldn't string 3 w's together.",
             "You're only in the league because we haven't found a replacement yet.",
-            "Good to see that your fantasy success perfectly contrasts your lack of personal success.",
             "Your league fee is more valuable than you.",
-            "The beating you're going to get is gonna bring back some childhood memories.",
-            "I don't hate you because you're fat. You're fat because I hate you",
             "Scoreboard.",
             "I just looked at your roster and threwup in my mouth.",
             "Don't worry, I have directions. \
@@ -49,12 +46,6 @@ class Misc(commands.Cog):
         ]
         chirp = random.choice(chirps)
         await ctx.send(content=chirp)
-
-    @commands.command('praise')
-    async def praise(self, ctx):
-        logger.info('praise called')
-        content = 'Wow, I think JP is doing a great job as commissioner! Keep up the good work boss!'
-        await ctx.send(content=content)
 
     @commands.command('poll')
     async def poll(self, ctx, *, content:str):
