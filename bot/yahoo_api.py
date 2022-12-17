@@ -292,10 +292,7 @@ class Yahoo:
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
-            draft_results = self.get_draft_results(league)
-            print(json.dumps(draft_results))
-            logger.info(json.dumps(draft_results))
-            logger.error(json.dumps(draft_results))
+            draft_results, season = self.get_draft_results(league)
             pick = None
             round = None
             drafted = False
@@ -304,18 +301,38 @@ class Yahoo:
             logger.error(e)
             return None
 
-        for result in draft_results:
-            try:
-                drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
-                keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
-                drafted_player_lower = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
-                if drafted_player_lower == keeper_lower:
-                    pick = int(result['pick'])
-                    round = int(result['round'])
-                    drafted = True
-                    break
-            except:
-                pass
+        # Since the keeper command hits the Yahoo API so many times we will
+        # look for a local draft file to read our results from. If it does
+        # not exist, we will create it with results returned from Yahoo
+        draft_json = {}
+        draft_file = '{}_draft_results.json'.format(season)
+        if not os.path.exists(draft_file):
+            for result in draft_results:
+                pick = result['pick']
+                round = result['round']
+                player = league.player_details(int(result['player_id']))[0]['name']['full']
+                draft_json['player'] = player
+                draft_json['player']['pick'] = pick
+                draft_json['player']['round'] = round
+            with open(draft_file, 'w') as f:
+                json.dump(draft_json, f)
+        else:
+            draft_results_json = json.load(open(draft_results))
+            print(draft_results_json)
+            logger.info(draft_results_json)
+            logger.error(draft_results_json)
+            for player in draft_results_json:
+                try:
+                    drafted_player = player
+                    keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
+                    drafted_player_lower = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
+                    if drafted_player_lower == keeper_lower:
+                        pick = int(player['pick'])
+                        round = int(player['round'])
+                        drafted = True
+                        break
+                except:
+                    pass
 
         if drafted:
             if round == 1 or round == 2:
@@ -332,30 +349,17 @@ class Yahoo:
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_results(self, league):
-    # Because the keeper command hits the Yahoo API so many times,
-    # lets try to use the local file if it exists first.
-    # If not, create it from Yahoo draft results and 
-    # return the resulting json from the file
         try:
-            season = int(league.settings()['season'])
-            draft_file = '{}_draft_results.json'.format(season)
-            if not os.path.exists(draft_file):
-                yahoo_draft_results = league.draft_results()
-                with open(draft_file, 'w') as f:
-                    json.dump(yahoo_draft_results, f)
-            draft_results = json.load(open(draft_file)) 
-            return draft_results
+            season = league.settings()['season']
+            draft_results = league.draft_results()
+            return draft_results, season
         except:
             # maybe we renewed the season and haven't drafted yet
             # so we have to get the draft results from the previous season
             season = int(league.settings()['season']) - 1
             league = self.get_league(season)
-            if not os.path.exists(draft_file):
-                yahoo_draft_results = league.draft_results()
-                with open(draft_file, 'w') as f:
-                    json.dump(yahoo_draft_results, f)
-            draft_results = json.load(open(draft_file)) 
-            return draft_results
+            draft_results = league.draft_results()
+            return draft_results, season
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_trade_deadline(self):
