@@ -68,8 +68,8 @@ class Yahoo:
             league = self.get_league()
             title = 'Standings'
             description = '```\n'
-            description += '{:5} {:25} {:8} {:9}\n'.format('Rank', 'Team', 'Record', 'PF', 'Streak')
-            description += '----------------------------------------------------------'
+            description += '{:5} {:25} {:8} {}\n'.format('Rank', 'Team', 'Record', 'PF / Streak')
+            description += '-----------------------------------------------------\n'
             for team in league.standings():
                 outcomes = team['outcome_totals']
                 streakType = team['streak']['type']
@@ -81,7 +81,7 @@ class Yahoo:
                 else:
                     streak = 'T{}'.format(streakValue)
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '{:5} {:25} {:8} {:9}\n'.format(team['rank'], team['name'], record, team['points_for'], streak)
+                description += '{:5} {:25} {:8} {:8} {}\n'.format(team['rank'], team['name'], record, team['points_for'], streak)
             description += '\n```'
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
@@ -114,7 +114,7 @@ class Yahoo:
                         manager = self.get_team_manager(league, team_key)
                         outcomes = team['outcome_totals']
                         record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                        description += ':{}: {} - {} ({})\n'.format(emojis[index], team['name'], manager, record)
+                        description += ':{}: ` {:35} {:7} `\n'.format(emojis[index], team['name'] + ' (' + manager + ')', record)
                     embed = discord.Embed(title=title, description=description, color=0xeee657)
             else:
                 content = 'The `$history` command only accepts a single year as an arugment. Please try again.'
@@ -166,9 +166,13 @@ class Yahoo:
             if team_dict:
                 team = league.to_team(team_dict['team_key'])
                 title = '{} - Roster'.format(team_name)
-                description = ''
+                description = '```\n'
                 for player in team.roster(league.current_week()):
-                    description += '**{}** - {}\n'.format(player['selected_position'], player['name'])
+                    if player['status']:
+                        description += '{:8} {} ({})\n'.format(player['selected_position'], player['name'], player['status'])
+                    else:
+                        description += '{:8} {}\n'.format(player['selected_position'], player['name'])
+                description += '```'
                 embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
                 embed.set_thumbnail(url=team_dict['team_logos'][0]['team_logo']['url'])
             else:
