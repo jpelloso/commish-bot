@@ -29,6 +29,8 @@ async def myid(ctx):
 if message.content.startswith('!hello'):
             await message.reply('Hello!', mention_author=True)
 
+heroku login -i
+
 ## Commands
     $ping                           - Gives the latency of the bot
     $standings                      - Returns the current standings of the current league

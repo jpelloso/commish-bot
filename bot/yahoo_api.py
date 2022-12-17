@@ -61,21 +61,29 @@ class Yahoo:
             return False
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_standings(self):
+    def get_standings(self): 
+        # team['name'], team['rank'], team['outcome_totals']
+        # team['streak'], team['points_for'], team['points_against']
         try:
             league = self.get_league()
             title = 'Standings'
             description = '```\n'
-            description += '{:5} {:22} {}\n'.format('Rank', 'Team', 'Record')
-            for index, team in enumerate(league.standings()):
+            description += '{:5} {:25} {:8} {:9}\n'.format('Rank', 'Team', 'Record', 'PF', 'Streak')
+            description += '----------------------------------------------------------'
+            for team in league.standings():
                 outcomes = team['outcome_totals']
+                streakType = team['streak']['type']
+                streakValue = team['streak']['value']
+                if streakType == 'loss':
+                    streak = 'L{}'.format(streakValue)
+                elif streakType == 'win':
+                    streak = 'W{}'.format(streakValue)
+                else:
+                    streak = 'T{}'.format(streakValue)
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '{:5} {:22} {}\n'.format(str(index+1), team['name'], record)
+                description += '{:5} {:25} {:8} {:9}\n'.format(team['rank'], team['name'], record, team['points_for'], streak)
             description += '\n```'
             embed = discord.Embed(title=title, description=description, color=0xeee657)
-            print(league.standings())
-            logger.info(league.standings())
-            logger.error(league.standings())
             return embed
         except Exception as e:
             logger.error(e)
