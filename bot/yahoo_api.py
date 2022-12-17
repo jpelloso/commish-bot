@@ -311,34 +311,31 @@ class Yahoo:
                 pick = result['pick']
                 round = result['round']
                 player = league.player_details(int(result['player_id']))[0]['name']['full']
-                draft_json['player'] = player
-                draft_json['player']['pick'] = pick
-                draft_json['player']['round'] = round
-            with open(draft_file, 'w') as f:
-                json.dump(draft_json, f)
-        else:
-            draft_results_json = json.load(open(draft_results))
-            print(draft_results_json)
-            logger.info(draft_results_json)
-            logger.error(draft_results_json)
-            for player in draft_results_json:
-                try:
-                    drafted_player = player
-                    keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
-                    drafted_player_lower = re.sub('[^A-Za-z0-9]+', '', drafted_player).lower()
-                    if drafted_player_lower == keeper_lower:
-                        pick = int(player['pick'])
-                        round = int(player['round'])
-                        drafted = True
-                        break
-                except:
-                    pass
+                draft_json[player] = {}
+                draft_json[player]['pick'] = pick
+                draft_json[player]['round'] = round
+            with open(draft_file, 'w') as fp:
+                json.dump(draft_json, fp, indent=4)
+
+        with open(draft_file, 'r') as f:
+            draft_results_json = json.load(f)
+        for player,value in draft_results_json.items():
+            try:
+                keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
+                player_lower = re.sub('[^A-Za-z0-9]+', '', player).lower()
+                if player_lower == keeper_lower:
+                    pick = int(value['pick'])
+                    round = int(value['round'])
+                    drafted = True
+                    break
+            except:
+                pass
 
         if drafted:
             if round == 1 or round == 2:
-                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(drafted_player, pick, round)
+                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(player, pick, round)
             else:
-                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(drafted_player, pick, round, round - 1)
+                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(player, pick, round, round - 1)
         else:
             if self.is_valid_player(league, keeper):
                 content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
