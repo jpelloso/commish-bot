@@ -2,6 +2,7 @@ import os
 import re
 import time
 import logging
+import json
 import discord
 import objectpath
 from config import settings
@@ -72,14 +73,14 @@ class Yahoo:
             description += '-----------------------------------------------------\n'
             for team in league.standings():
                 outcomes = team['outcome_totals']
-                streakType = team['streak']['type']
-                streakValue = team['streak']['value']
-                if streakType == 'loss':
-                    streak = 'L{}'.format(streakValue)
-                elif streakType == 'win':
-                    streak = 'W{}'.format(streakValue)
+                streak_type = team['streak']['type']
+                streak_value = team['streak']['value']
+                if streak_type == 'loss':
+                    streak = 'L{}'.format(streak_value)
+                elif streak_type == 'win':
+                    streak = 'W{}'.format(streak_value)
                 else:
-                    streak = 'T{}'.format(streakValue)
+                    streak = 'T{}'.format(streak_value)
                 record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
                 description += '{:5} {:25} {:8} {:8} {}\n'.format(team['rank'], team['name'], record, team['points_for'], streak)
             description += '\n```'
@@ -287,16 +288,14 @@ class Yahoo:
             logger.exception('Error while fetching ownership for player id: {} in league {}'.format(player_id, self.league_id))
             return None
 
-# TODO: can we write draft results to a json file locally and parse that to not exceed rate limits
-# TODO: remove hall of fame and hall of shame commands since they are in league-history channel
-# TODO: standings format update print '{:20}'.format('Record')
-# TODO: roster format updates?
-
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
             draft_results = self.get_draft_results(league)
+            print(json.dumps(draft_results))
+            logger.info(json.dumps(draft_results))
+            logger.error(json.dumps(draft_results))
             pick = None
             round = None
             drafted = False
@@ -306,7 +305,6 @@ class Yahoo:
             return None
 
         for result in draft_results:
-            time.sleep(0.33)
             try:
                 drafted_player = league.player_details(int(result['player_id']))[0]['name']['full']
                 keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
@@ -334,15 +332,29 @@ class Yahoo:
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_results(self, league):
+    # Because the keeper command hits the Yahoo API so many times,
+    # lets try to use the local file if it exists first.
+    # If not, create it from Yahoo draft results and 
+    # return the resulting json from the file
         try:
-            draft_results = league.draft_results()
+            season = int(league.settings()['season'])
+            draft_file = '{}_draft_results.json'.format(season)
+            if not os.path.exists(draft_file):
+                yahoo_draft_results = league.draft_results()
+                with open(draft_file, 'w') as f:
+                    json.dump(yahoo_draft_results, f)
+            draft_results = json.load(open(draft_file)) 
             return draft_results
         except:
             # maybe we renewed the season and haven't drafted yet
             # so we have to get the draft results from the previous season
             season = int(league.settings()['season']) - 1
             league = self.get_league(season)
-            draft_results = league.draft_results()
+            if not os.path.exists(draft_file):
+                yahoo_draft_results = league.draft_results()
+                with open(draft_file, 'w') as f:
+                    json.dump(yahoo_draft_results, f)
+            draft_results = json.load(open(draft_file)) 
             return draft_results
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
