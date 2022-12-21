@@ -10,3 +10,6 @@ __pycache__
 # secret / token files
 secrets.json
 .secrets.*
+
+# commish bot files
+*draft_results.json

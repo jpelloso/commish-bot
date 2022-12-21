@@ -198,8 +198,6 @@ class Yahoo:
             league = self.get_league()
             team_dict = self.get_team(league, team_name)
             if team_dict:
-                print(team_dict)
-                logger.info(team_dict)
                 waiver = team_dict['waiver_priority']
                 content = "{} has a waiver priority of **{}**".format(team_name, str(waiver))
             else:
