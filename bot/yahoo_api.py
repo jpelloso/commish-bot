@@ -199,6 +199,8 @@ class Yahoo:
             league = self.get_league()
             team_dict = self.get_team(league, team_name)
             if team_dict:
+                print(team_dict)
+                logger.info(team_dict)
                 waiver = team_dict['waiver_priority']
                 content = "{} has a waiver priority of **{}**".format(team_name, str(waiver))
             else:
@@ -346,14 +348,15 @@ class Yahoo:
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_results(self, league):
-        try:
-            season = league.settings()['season']
+        season = league.settings()['season']
+        draft_status = league.settings()['draft_status']
+        if draft_status == 'postdraft':
             draft_results = league.draft_results()
             return draft_results, season
-        except:
+        else:
             # maybe we renewed the season and haven't drafted yet
             # so we have to get the draft results from the previous season
-            season = int(league.settings()['season']) - 1
+            season = int(season) - 1
             league = self.get_league(season)
             draft_results = league.draft_results()
             return draft_results, season        
@@ -378,8 +381,9 @@ class Yahoo:
             playoff_start_week = league.settings()['playoff_start_week']
             playoff_end_week = league.settings()['end_week']
             num_playoff_teams = league.settings()['num_playoff_teams']
-            content = 'The playoffs for the {} season are **weeks {}-{}** with {} teams fighting for the chance to be named champion.'.format(
-                season, playoff_start_week, playoff_end_week, num_playoff_teams)
+            league_end_date = league.settings()['end_date']
+            content = 'The playoffs for the {} season are **weeks {}-{}** ending on **{}** with {} teams fighting for the chance to be named champion.'.format(
+                season, playoff_start_week, playoff_end_week, league_end_date, num_playoff_teams)
             return content
         except Exception as e:
             logger.error(e)
