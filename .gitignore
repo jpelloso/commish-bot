@@ -8,10 +8,5 @@ __pycache__
 .venv
 
 # secret / token files
-oauth2.json
-oauth.json
 secrets.json
-guilds.json
 .secrets.*
-answers.txt
-*.pem

@@ -1,3 +1,2 @@
 [default]
 LOG_LEVEL = "INFO"
-GUILDS_DATASTORE = "config/guilds.json"

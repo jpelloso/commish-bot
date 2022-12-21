@@ -17,7 +17,6 @@ class Yahoo:
         self.oauth = oauth
         self.league_id = league_id
         self.league_type = league_type
-        self.embed_divider = r'\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_'
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_league(self, year=None):
@@ -126,6 +125,7 @@ class Yahoo:
     def get_matchups(self):
         try:
             league = self.get_league()
+            embed_divider = r'\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_'
             title = 'Matchups for Week {}'.format(str(league.current_week()))
             embed = discord.Embed(title=title, description='', color=0xeee657)
             matchups_json = objectpath.Tree(league.matchups())
@@ -150,7 +150,7 @@ class Yahoo:
                 else:
                     team2_details = 'Score: {}\n'.format(team2_actual_points)
                 embed.add_field(name='{} (Proj. {})'.format(team1_name, team1_projected_points), value=team1_details, inline=False)
-                embed.add_field(name='{} (Proj. {})'.format(team2_name, team2_projected_points), value=team2_details + self.embed_divider, inline=False)
+                embed.add_field(name='{} (Proj. {})'.format(team2_name, team2_projected_points), value=team2_details + embed_divider, inline=False)
             return embed
         except Exception as e:
             logger.error(e)
