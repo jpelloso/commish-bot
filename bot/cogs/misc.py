@@ -31,10 +31,6 @@ class Misc(commands.Cog):
         elif 'fire pelloso' in msg:
             logger.info('repling to fire pelloso')
             await message.reply("C'mon now, I think Commissioner Pelloso is doing a fine job, calm down.", mention_author=False)
-        elif 'pjs' in msg or 'pj\'s' in msg:
-            logger.info('replying to PJs')
-            await message.reply("Did somebody say PJ's!? Don't worry, I have directions. \
-                https://www.google.com/maps/place/PJ's/@42.0548294,-72.1629024,17z/data=!4m5!3m4!1s0x89e697eb3bdb3bc9:0xd902df67e14be1f2!8m2!3d42.0548294!4d-72.1607137")
 
     @commands.command('poll')
     async def poll(self, ctx, *, content:str):
