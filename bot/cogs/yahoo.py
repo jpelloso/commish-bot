@@ -1,12 +1,10 @@
-import os
-import logging
+import config
 import urllib3
 import yahoo_api
 from discord.ext import commands
 from yahoo_oauth import OAuth2
 
-logger = logging.getLogger(os.path.basename(__file__))
-logger.setLevel(logging.INFO)
+logger = config.get_logger(__name__)
 
 def oauth(func):
     async def setup(cog, ctx, *, content=None):

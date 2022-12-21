@@ -185,7 +185,6 @@ class Yahoo:
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_team(self, league, team_name):
         try:
-            content = None
             for id, team in league.teams().items():
                 if team['name'] == team_name:
                     return team
@@ -291,6 +290,34 @@ class Yahoo:
             return None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_trade_deadline(self):
+        try:
+            league = self.get_league()
+            season = self.get_league_season(league)
+            trade_deadline = league.settings()['trade_end_date']
+            content = 'The trade deadline for the {} season is **{}**.'.format(season, trade_deadline)
+            return content
+        except Exception as e:
+            logger.error(e)
+            return None
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_playoffs_details(self):
+        try:
+            league = self.get_league()
+            season = self.get_league_season(league)
+            playoff_start_week = league.settings()['playoff_start_week']
+            playoff_end_week = league.settings()['end_week']
+            num_playoff_teams = league.settings()['num_playoff_teams']
+            league_end_date = league.settings()['end_date']
+            content = 'The playoffs for the {} season are **weeks {}-{}** ending on **{}** with {} teams fighting for the chance to be named champion.'.format(
+                season, playoff_start_week, playoff_end_week, league_end_date, num_playoff_teams)
+            return content
+        except Exception as e:
+            logger.error(e)
+            return None
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
@@ -360,31 +387,3 @@ class Yahoo:
             league = self.get_league(season)
             draft_results = league.draft_results()
             return draft_results, season        
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_trade_deadline(self):
-        try:
-            league = self.get_league()
-            season = self.get_league_season(league)
-            trade_deadline = league.settings()['trade_end_date']
-            content = 'The trade deadline for the {} season is **{}**.'.format(season, trade_deadline)
-            return content
-        except Exception as e:
-            logger.error(e)
-            return None
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_playoffs_details(self):
-        try:
-            league = self.get_league()
-            season = self.get_league_season(league)
-            playoff_start_week = league.settings()['playoff_start_week']
-            playoff_end_week = league.settings()['end_week']
-            num_playoff_teams = league.settings()['num_playoff_teams']
-            league_end_date = league.settings()['end_date']
-            content = 'The playoffs for the {} season are **weeks {}-{}** ending on **{}** with {} teams fighting for the chance to be named champion.'.format(
-                season, playoff_start_week, playoff_end_week, league_end_date, num_playoff_teams)
-            return content
-        except Exception as e:
-            logger.error(e)
-            return None
