@@ -2,10 +2,7 @@ import os
 import logging
 from dynaconf import Dynaconf
 
-settings = Dynaconf(
-    settings_files=['settings.toml', '.secrets.toml'],
-    environments=True
-)
+settings = Dynaconf(settings_files=['settings.toml', '.secrets.toml'], environments=True)
 
 # We cannot loop through Dynaconf settings and dynamically set
 # environment b/c of the default Dynaconf vars. If we are running

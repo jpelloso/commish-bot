@@ -9,7 +9,7 @@ showenv:
 
 configure:
 	@pip install -r requirements.txt
-	@./scripts/configure.sh
+	@python scripts/get_oauth_creds.py
 
 run:
 	@python ${MODULE}/${MODULE}.py
