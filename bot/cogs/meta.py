@@ -1,9 +1,8 @@
-import logging
+import config
 import discord
 from discord.ext import commands
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
+logger = config.get_logger(__name__)
 
 class Meta(commands.Cog):
 

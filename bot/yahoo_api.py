@@ -1,16 +1,13 @@
 import os
 import re
-import time
-import logging
 import json
+import config
 import discord
 import objectpath
-from config import settings
 from yahoo_fantasy_api import game
 from cachetools import cached, TTLCache
 
-logger = logging.getLogger(os.path.basename(__file__))
-logger.setLevel(settings.log_level)
+logger = config.get_logger(__name__)
 
 class Yahoo:
 
@@ -71,6 +68,7 @@ class Yahoo:
             description = '```\n'
             description += '{:5} {:25} {:8} {}\n'.format('Rank', 'Team', 'Record', 'PF / Streak')
             description += '-----------------------------------------------------\n'
+            logger.debug(league.standings())
             for team in league.standings():
                 outcomes = team['outcome_totals']
                 streak_type = team['streak']['type']
@@ -110,6 +108,7 @@ class Yahoo:
                     league = self.get_league(past_season)
                     title = '{} Season'.format(past_season)
                     description = ''
+                    logger.debug(league.standings())
                     for index, team in enumerate(league.standings()):
                         team_key = team['team_key']
                         manager = self.get_team_manager(league, team_key)
@@ -168,6 +167,7 @@ class Yahoo:
                 team = league.to_team(team_dict['team_key'])
                 title = '{} - Roster'.format(team_name)
                 description = '```\n'
+                logger.debug(team.roster(league.current_week()))
                 for player in team.roster(league.current_week()):
                     if player['status']:
                         description += '{:8} {} ({})\n'.format(player['selected_position'], player['name'], player['status'])
@@ -246,6 +246,7 @@ class Yahoo:
             league = self.get_league()
             if self.is_valid_player(league, player_name):
                 player = league.player_details(player_name)[0]
+                logger.debug(player)
                 title = player['name']['full']
                 player_id_list = [int(player['player_id'])]
                 description = '#{} - {}'.format(player['uniform_number'], player['editorial_team_full_name'])
@@ -303,9 +304,18 @@ class Yahoo:
         # Since the keeper command hits the Yahoo API so many times we will
         # look for a local draft file to read our results from. If it does
         # not exist, we will create it with results returned from Yahoo
+        draft_json = {}
         draft_file = '{}_draft_results.json'.format(season)
         if not os.path.exists(draft_file):
-            self.generate_draft_file(draft_results, draft_file)
+            for result in draft_results:
+                pick = result['pick']
+                round = result['round']
+                player = league.player_details(int(result['player_id']))[0]['name']['full']
+                draft_json[player] = {}
+                draft_json[player]['pick'] = pick
+                draft_json[player]['round'] = round
+            with open(draft_file, 'w') as fp:
+                json.dump(draft_json, fp, indent=4)
 
         with open(draft_file, 'r') as f:
             draft_results_json = json.load(f)
@@ -346,20 +356,7 @@ class Yahoo:
             season = int(league.settings()['season']) - 1
             league = self.get_league(season)
             draft_results = league.draft_results()
-            return draft_results, season
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def generate_draft_file(self, draft_results, draft_file):
-        draft_json = {}
-        for result in draft_results:
-            pick = result['pick']
-            round = result['round']
-            player = league.player_details(int(result['player_id']))[0]['name']['full']
-            draft_json[player] = {}
-            draft_json[player]['pick'] = pick
-            draft_json[player]['round'] = round
-        with open(draft_file, 'w') as fp:
-            json.dump(draft_json, fp, indent=4)
+            return draft_results, season        
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_trade_deadline(self):

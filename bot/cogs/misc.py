@@ -1,12 +1,10 @@
 import re
-import logging
+import config
 import random
 import discord
 from discord.ext import commands
-from cachetools import cached, TTLCache
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
+logger = config.get_logger(__name__)
 
 class Misc(commands.Cog):
 
@@ -17,23 +15,26 @@ class Misc(commands.Cog):
     async def on_message(self, message):
         msg = message.content.lower()
         if 'good bot' in msg:
+            logger.info('replying to good bot')
             emojis = [':grin:', ':heart:', ':slight_smile:', ':smile:']
             replies = ['Anytime', 'Appreciate you', 'Thanks', 'You got it']
             emoji = random.choice(emojis)
             reply = random.choice(replies)
             await message.reply('{} {}'.format(reply, emoji), mention_author=False)
         elif 'bad bot' in msg:
+            logger.info('repling to bad bot')
             emojis = [':broken_heart:', ':cry:', ':disappointed:', ':sob:']
             replies = ['I am trying my hardest!', 'Pain', 'Sorry', 'Wah']
             emoji = random.choice(emojis)
             reply = random.choice(replies)
             await message.reply('{} {}'.format(reply, emoji), mention_author=False)
         elif 'fire pelloso' in msg:
+            logger.info('repling to fire pelloso')
             await message.reply("C'mon now, I think Commissioner Pelloso is doing a fine job, calm down.", mention_author=False)
         elif 'pjs' in msg or 'pj\'s' in msg:
+            logger.info('replying to PJs')
             await message.reply("Did somebody say PJ's!? Don't worry, I have directions. \
                 https://www.google.com/maps/place/PJ's/@42.0548294,-72.1629024,17z/data=!4m5!3m4!1s0x89e697eb3bdb3bc9:0xd902df67e14be1f2!8m2!3d42.0548294!4d-72.1607137")
-
 
     @commands.command('poll')
     async def poll(self, ctx, *, content:str):
