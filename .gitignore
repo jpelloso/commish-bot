@@ -1,13 +1,17 @@
-.venv
+# python
 __pycache__
-oauth2.json
-oauth.json
 
+# development environments
 .vscode
 
+# virtual environments
+.venv
+
+# secret / token files
+oauth2.json
+oauth.json
 secrets.json
 guilds.json
-# Ignore dynaconf secret files
 .secrets.*
 answers.txt
 *.pem

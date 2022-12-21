@@ -180,7 +180,6 @@ class Yahoo:
                 content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
         except Exception as e:
             logger.error(e)
-            print(e)
         return content, embed
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
@@ -304,18 +303,9 @@ class Yahoo:
         # Since the keeper command hits the Yahoo API so many times we will
         # look for a local draft file to read our results from. If it does
         # not exist, we will create it with results returned from Yahoo
-        draft_json = {}
         draft_file = '{}_draft_results.json'.format(season)
         if not os.path.exists(draft_file):
-            for result in draft_results:
-                pick = result['pick']
-                round = result['round']
-                player = league.player_details(int(result['player_id']))[0]['name']['full']
-                draft_json[player] = {}
-                draft_json[player]['pick'] = pick
-                draft_json[player]['round'] = round
-            with open(draft_file, 'w') as fp:
-                json.dump(draft_json, fp, indent=4)
+            self.generate_draft_file(draft_results, draft_file)
 
         with open(draft_file, 'r') as f:
             draft_results_json = json.load(f)
@@ -357,6 +347,19 @@ class Yahoo:
             league = self.get_league(season)
             draft_results = league.draft_results()
             return draft_results, season
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def generate_draft_file(self, draft_results, draft_file):
+        draft_json = {}
+        for result in draft_results:
+            pick = result['pick']
+            round = result['round']
+            player = league.player_details(int(result['player_id']))[0]['name']['full']
+            draft_json[player] = {}
+            draft_json[player]['pick'] = pick
+            draft_json[player]['round'] = round
+        with open(draft_file, 'w') as fp:
+            json.dump(draft_json, fp, indent=4)
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_trade_deadline(self):
