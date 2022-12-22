@@ -319,7 +319,6 @@ class Yahoo:
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
-            draft_results, season = self.get_draft_results(league)
             pick = None
             round = None
             drafted = False
@@ -328,25 +327,8 @@ class Yahoo:
             logger.error(e)
             return None
 
-        # Since the keeper command hits the Yahoo API so many times we will
-        # look for a local draft file to read our results from. If it does
-        # not exist, we will create it with results returned from Yahoo
-        draft_json = {}
-        draft_file = '{}_draft_results.json'.format(season)
-        if not os.path.exists(draft_file):
-            for result in draft_results:
-                pick = result['pick']
-                round = result['round']
-                player = league.player_details(int(result['player_id']))[0]['name']['full']
-                draft_json[player] = {}
-                draft_json[player]['pick'] = pick
-                draft_json[player]['round'] = round
-            with open(draft_file, 'w') as fp:
-                json.dump(draft_json, fp, indent=4)
-
-        with open(draft_file, 'r') as f:
-            draft_results_json = json.load(f)
-        for player,value in draft_results_json.items():
+        draft_results = self.get_draft_results()
+        for player,value in draft_results.items():
             try:
                 keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
                 player_lower = re.sub('[^A-Za-z0-9]+', '', player).lower()
@@ -368,20 +350,36 @@ class Yahoo:
                 content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
             else:
                 content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper)
-
         return content
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_draft_results(self, league):
+    def get_draft_results(self):
+        league = self.get_league()
         season = league.settings()['season']
         draft_status = league.settings()['draft_status']
         if draft_status == 'postdraft':
             draft_results = league.draft_results()
-            return draft_results, season
         else:
             # maybe we renewed the season and haven't drafted yet
             # so we have to get the draft results from the previous season
             season = int(season) - 1
             league = self.get_league(season)
             draft_results = league.draft_results()
-            return draft_results, season        
+        # Since the keeper command hits the Yahoo API so many times we will
+        # look for a local draft file to read our results from. If it does
+        # not exist, we will create it with results returned from Yahoo
+        draft_json = {}
+        if not os.path.exists('draft_results.json'):
+            for result in draft_results:
+                pick = result['pick']
+                round = result['round']
+                player = league.player_details(int(result['player_id']))[0]['name']['full']
+                draft_json[player] = {}
+                draft_json[player]['pick'] = pick
+                draft_json[player]['round'] = round
+            with open('draft_results.json', 'w') as fp:
+                json.dump(draft_json, fp, indent=4)
+                logger.info('created draft_results.json')
+        with open('draft_results.json', 'r') as f:
+            draft_results_json = json.load(f)
+        return draft_results_json

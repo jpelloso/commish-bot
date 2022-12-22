@@ -20,12 +20,24 @@ class Yahoo(commands.Cog):
         self.http = urllib3.PoolManager()
         self.KEY = KEY
         self.SECRET = SECRET
-        self.yahoo_api = None
+        self.yahoo_api = self.refresh_oauth()
+        self.generate_draft_results()
 
     async def cog_before_invoke(self, ctx):
-        self.yahoo_api = yahoo_api.Yahoo(OAuth2(self.KEY, self.SECRET, store_file=False, **config.get_yahoo_oauth()), 
-            os.environ['YAHOO_LEAGUE_ID'], os.environ['YAHOO_LEAGUE_TYPE'])
+        self.yahoo_api = self.refresh_oauth()
         return
+
+    def refresh_oauth(self):
+        oauth = yahoo_api.Yahoo(OAuth2(self.KEY, self.SECRET, store_file=False, **config.get_yahoo_oauth()), 
+            os.environ['YAHOO_LEAGUE_ID'], os.environ['YAHOO_LEAGUE_TYPE'])
+        return oauth
+
+    def generate_draft_results(self):
+        # Since dynos restart every 24 hours with Heroku,
+        # regenerate the draft results file when the yahoo 
+        # cog is added to bot (on bot init/restart)
+        logger.info('generate draft results')
+        self.yahoo_api.get_draft_results()
 
     @commands.command('standings')
     async def standings(self, ctx):
