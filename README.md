@@ -89,7 +89,7 @@ In order to properly configure your bot you will need the following:
 ### Heroku
 Heroku apps include a [Procfile](Procfile) that specifies the commands that are executed by the app on startup and a [runtime.txt](runtime.txt) file that specifies the python version to use at runtime. The [Procfile](Procfile) should automatically create a Dyno on the **Resources** tab of the Heroku dashboard.
 1. Connect you app to GitHub by navigating to the **Deploy** tab and authenticating Heroku with GitHub
-2. Navigate to the **Settings** section and open up **Config Vars**. Create a environment variable for each entry in the `.secrets.toml` file in addition to `HEROKU_DEPLOYMENT=True`. Setting this value will ignore the `.secrets.toml` file which should not be pushed to GitHub
+2. Navigate to the **Settings** section and open up **Config Vars**. Create a environment variable for each entry in the `settings.toml` and `.secrets.toml` files in addition to `HEROKU_DEPLOYMENT=True`. Setting this value will ignore the `.secrets.toml` file which should not be pushed to GitHub
 3. Navigate back to the **Deploy** section, choose a branch to deploy from and select **Deploy Branch**
 4. Monitor the startup of the app with `heroku logs --tail -a discord-commish-bot` (requires Heroku CLI)
     * If you are unable to login via browser from Heroku CLI you can use `heroku login -i` to login directly from the terminal
