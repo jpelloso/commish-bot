@@ -1,0 +1,15 @@
+# python
+__pycache__
+
+# development environments
+.vscode
+
+# virtual environments
+.venv
+
+# secret / token files
+secrets.json
+.secrets.*
+
+# commish bot files
+draft_results.json
