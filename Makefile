@@ -8,8 +8,8 @@ showenv:
 	@echo 'Tag:         '${TAG}
 
 configure:
-	@pip install -r requirements.txt
-	@python scripts/get_oauth_creds.py
+	@pip3 install -r requirements.txt
+	@python3 scripts/get_oauth_creds.py
 
 run:
-	@python ${MODULE}/${MODULE}.py
+	@python3 ${MODULE}/${MODULE}.py
