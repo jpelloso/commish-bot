@@ -65,21 +65,11 @@ class Yahoo:
             league = self.get_league()
             title = 'Standings'
             description = '```\n'
-            description += '{:5} {:25} {:8} {}\n'.format('Rank', 'Team', 'Record', 'PF / Streak')
-            description += '-----------------------------------------------------\n'
             logger.debug(league.standings())
             for team in league.standings():
                 outcomes = team['outcome_totals']
-                streak_type = team['streak']['type']
-                streak_value = team['streak']['value']
-                if streak_type == 'loss':
-                    streak = 'L{}'.format(streak_value)
-                elif streak_type == 'win':
-                    streak = 'W{}'.format(streak_value)
-                else:
-                    streak = 'T{}'.format(streak_value)
-                record = '{}-{}-{}'.format(outcomes['wins'], outcomes['losses'], outcomes['ties'])
-                description += '{:5} {:25} {:8} {:8} {}\n'.format(team['rank'], team['name'], record, team['points_for'], streak)
+                record = '{}-{}'.format(outcomes['wins'], outcomes['losses'])
+                description += '{:3} {:23} {}\n'.format(team['rank'] + '.', team['name'], record)
             description += '\n```'
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
@@ -125,7 +115,6 @@ class Yahoo:
     def get_matchups(self):
         try:
             league = self.get_league()
-            embed_divider = r'\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_'
             title = 'Matchups for Week {}'.format(str(league.current_week()))
             embed = discord.Embed(title=title, description='', color=0xeee657)
             matchups_json = objectpath.Tree(league.matchups())
@@ -135,22 +124,14 @@ class Yahoo:
                 team1_name = team1[0][2]['name']
                 team1_actual_points = team1[1]['team_points']['total']
                 team1_projected_points = team1[1]['team_projected_points']['total']
-                if 'win_probability' in team1[1]:
-                    team1_win_probability = "{:.0%}".format(team1[1]['win_probability'])
-                    team1_details = 'Score: {}\nWin Probability: {}\n'.format(team1_actual_points, team1_win_probability)
-                else:
-                    team1_details = 'Score: {}\n'.format(team1_actual_points)
                 team2 = matchup['1']['team']
                 team2_name = team2[0][2]['name']
                 team2_actual_points = team2[1]['team_points']['total']
                 team2_projected_points = team2[1]['team_projected_points']['total']
-                if 'win_probability' in team2[1]:
-                    team2_win_probability = "{:.0%}".format(team2[1]['win_probability'])
-                    team2_details = 'Score: {}\nWin Probability: {}\n'.format(team2_actual_points, team2_win_probability)
-                else:
-                    team2_details = 'Score: {}\n'.format(team2_actual_points)
-                embed.add_field(name='{} (Proj. {})'.format(team1_name, team1_projected_points), value=team1_details, inline=False)
-                embed.add_field(name='{} (Proj. {})'.format(team2_name, team2_projected_points), value=team2_details + embed_divider, inline=False)
+                projected_details = 'Projected: {} to {}'.format(team1_projected_points, team2_projected_points)
+                actual_details = 'Actual: {} to {}'.format(team1_actual_points, team2_actual_points)
+                details = '{}\n{}'.format(projected_details, actual_details)
+                embed.add_field(name='{} vs. {}'.format(team1_name, team2_name), value=details, inline=False)
             return embed
         except Exception as e:
             logger.error(e)
@@ -168,11 +149,19 @@ class Yahoo:
                 title = '{} - Roster'.format(team_name)
                 description = '```\n'
                 logger.debug(team.roster(league.current_week()))
-                for player in team.roster(league.current_week()):
-                    if player['status']:
-                        description += '{:8} {} ({})\n'.format(player['selected_position'], player['name'], player['status'])
-                    else:
-                        description += '{:8} {}\n'.format(player['selected_position'], player['name'])
+                if not team.roster(league.current_week()):
+                    content = 'Sorry, it looks like the roster for **{}** is empty. Has your league drafted for the {} season yet?'.format(team_name, self.get_league_season(league))
+                    return content, embed
+                else:
+                    for player in team.roster(league.current_week()):
+                        if player['selected_position'] == 'W/R/T':
+                            position = 'FLX'
+                        else:
+                            position = player['selected_position']
+                        if player['status']:
+                            description += '{:3} {} ({})\n'.format(position, player['name'], player['status'])
+                        else:
+                            description += '{:3} {}\n'.format(position, player['name'])
                 description += '```'
                 embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
                 embed.set_thumbnail(url=team_dict['team_logos'][0]['team_logo']['url'])
