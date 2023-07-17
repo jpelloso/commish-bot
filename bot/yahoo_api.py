@@ -358,7 +358,8 @@ class Yahoo:
         # look for a local draft file to read our results from. If it does
         # not exist, we will create it with results returned from Yahoo
         draft_json = {}
-        if not os.path.exists('draft_results.json'):
+        draft_results_file = 'draft_results_{}.json'.format(str(season))
+        if not os.path.exists(draft_results_file):
             for result in draft_results:
                 pick = result['pick']
                 round = result['round']
@@ -366,9 +367,9 @@ class Yahoo:
                 draft_json[player] = {}
                 draft_json[player]['pick'] = pick
                 draft_json[player]['round'] = round
-            with open('draft_results.json', 'w') as fp:
+            with open(draft_results_file, 'w') as fp:
                 json.dump(draft_json, fp, indent=4)
                 logger.info('created draft_results.json')
-        with open('draft_results.json', 'r') as f:
+        with open(draft_results_file, 'r') as f:
             draft_results_json = json.load(f)
         return draft_results_json
