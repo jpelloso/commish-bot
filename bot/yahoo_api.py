@@ -45,9 +45,9 @@ class Yahoo:
     def is_valid_player(self, league, player):
         player_list = league.player_details(player)
         if player_list:
-            return True
+            return player_list[0]['name']['full']
         else:
-            return False
+            return None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def is_integer(self, value):
@@ -66,10 +66,14 @@ class Yahoo:
             title = 'Standings'
             description = '```\n'
             logger.debug(league.standings())
-            for team in league.standings():
+            for index,team in enumerate(league.standings(), start=1):
                 outcomes = team['outcome_totals']
                 record = '{}-{}'.format(outcomes['wins'], outcomes['losses'])
-                description += '{:3} {:23} {}\n'.format(team['rank'] + '.', team['name'], record)
+                if team['rank']:
+                  rank = team['rank']
+                else:
+                  rank = index
+                description += '{:3} {:23} {}\n'.format(str(rank) + '.', team['name'], record)
             description += '\n```'
             embed = discord.Embed(title=title, description=description, color=0xeee657)
             return embed
@@ -143,28 +147,33 @@ class Yahoo:
             content = None
             embed = None
             league = self.get_league()
-            team_dict = self.get_team(league, team_name)
+            draft_status = league.settings()['draft_status']
+            if draft_status == 'postdraft':
+              team_dict = self.get_team(league, team_name)
+            else:
+              season = league.settings()['season']
+              season = int(season) - 1
+              league = self.get_league(season)
+              team_dict = self.get_team(league, team_name)
             if team_dict:
                 team = league.to_team(team_dict['team_key'])
                 title = '{} - Roster'.format(team_name)
                 description = '```\n'
                 logger.debug(team.roster(league.current_week()))
-                if not team.roster(league.current_week()):
-                    content = 'Sorry, it looks like the roster for **{}** is empty. Has your league drafted for the {} season yet?'.format(team_name, self.get_league_season(league))
-                    return content, embed
-                else:
-                    for player in team.roster(league.current_week()):
-                        if player['selected_position'] == 'W/R/T':
-                            position = 'FLX'
-                        else:
-                            position = player['selected_position']
-                        if player['status']:
-                            description += '{:3} {} ({})\n'.format(position, player['name'], player['status'])
-                        else:
-                            description += '{:3} {}\n'.format(position, player['name'])
+                for player in team.roster():
+                  if player['selected_position'] == 'W/R/T':
+                    position = 'FL'
+                  elif player['selected_position'] == 'DEF':
+                   position = 'DF'
+                  else:
+                    position = player['selected_position']
+                  if player['status']:
+                    description += '{:3} {} ({})\n'.format(position, player['name'], player['status'])
+                  else:
+                    description += '{:3} {}\n'.format(position, player['name'])
                 description += '```'
                 embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
-                embed.set_thumbnail(url=team_dict['team_logos'][0]['team_logo']['url'])
+                #embed.set_thumbnail(url=team_dict['team_logos'][0]['team_logo']['url'])
             else:
                 content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
         except Exception as e:
@@ -335,8 +344,9 @@ class Yahoo:
             else:
                 content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(player, pick, round, round - 1)
         else:
-            if self.is_valid_player(league, keeper):
-                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper)
+            player = self.is_valid_player(league, keeper)
+            if player:
+                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(player)
             else:
                 content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper)
         return content
