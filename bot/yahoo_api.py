@@ -314,6 +314,40 @@ class Yahoo:
             return None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_rounds_drafted(self, team_name):
+        try:
+            content = None
+            embed = None
+            league = self.get_league()
+            draft_results = self.get_draft_results()
+            draft_status = league.settings()['draft_status']
+            if draft_status == 'postdraft':
+                team_dict = self.get_team(league, team_name)
+            else:
+                season = league.settings()['season']
+                season = int(season) - 1
+                league = self.get_league(season)
+                team_dict = self.get_team(league, team_name)
+            if team_dict:
+                team = league.to_team(team_dict['team_key'])
+                title = '{} - Rounds Drafted'.format(team_name)
+                footer = 'The round shown is where the player was drafted, not the cost of the keeper'
+                description = '```\n'
+                for player in team.roster():
+                    if player['name'] in draft_results:
+                        round = 'Rd ' + str(draft_results[player['name']]['round'])
+                    else:
+                        round = 'FA/WW'
+                    description += '{:6} {}\n'.format(round, player['name'])
+                description += '```'
+                embed = discord.Embed(title=title, description=description, footer=footer, url=team_dict['url'], color=0xeee657)
+            else:
+                content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
+        except Exception as e:
+            logger.error(e)
+        return content, embed
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
