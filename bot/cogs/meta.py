@@ -28,6 +28,7 @@ class Meta(commands.Cog):
         embed.add_field(name='`$playoffs`', value='Return details about the playoffs for the current season', inline=False)
         embed.add_field(name='`$trade_deadline`', value='Return the last possible day for trades to be processed', inline=False)
         embed.add_field(name='`$roster [team]`', value='Return the roster of a specific team', inline=False)
+        embed.add_field(name='`$drafted [team]`', value='Return the rounds players on a specific team were drafted in', inline=False)
         embed.add_field(name='`$faab [team]`', value='Return the FAAB balance of a specific team', inline=False)
         embed.add_field(name='`$manager [team]`', value='Return the manager nickname of a specific team', inline=False)
         embed.add_field(name='`$waiver [team]`', value='Return the waiver position of a specific team', inline=False)
