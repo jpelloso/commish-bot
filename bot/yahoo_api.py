@@ -340,7 +340,8 @@ class Yahoo:
                         round = 'FA/WW'
                     description += '{:6} {}\n'.format(round, player['name'])
                 description += '```'
-                embed = discord.Embed(title=title, description=description, footer=footer, url=team_dict['url'], color=0xeee657)
+                embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
+                embed.set_footer(text=footer)
             else:
                 content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
         except Exception as e:
