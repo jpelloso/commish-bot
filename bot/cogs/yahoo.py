@@ -75,6 +75,15 @@ class Yahoo(commands.Cog):
         else:
             await ctx.send(self.error_message)
 
+    @commands.command('drafted')
+    async def drafted(self, ctx, *, content:str):
+        logger.info('drafted called')
+        msg, embed = self.yahoo_api.get_rounds_drafted(content)
+        if msg or embed:
+            await ctx.send(content=msg, embed=embed)
+        else:
+            await ctx.send(self.error_message)
+
     @commands.command('player_details')
     async def player_details(self, ctx,  *, content:str):
         logger.info('player_details called')

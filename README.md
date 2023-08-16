@@ -10,6 +10,7 @@ A Yahoo Fantasy sports bot for Discord
     $playoffs                      - Return details about the playoffs for the current season
     $trade_deadline                - Return the last possible day for trades to be processed
     $roster [team]                 - Return the roster of a specific team
+    $drafted [team]                - Return the rounds players on a specific team were drafted in
     $faab [team]                   - Return the FAAB balance of a specific team
     $manager [team]                - Return the manager nickname of a specific team
     $waiver [team]                 - Return the waiver position of a specific team

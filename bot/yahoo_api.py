@@ -43,6 +43,7 @@ class Yahoo:
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def is_valid_player(self, league, player):
+        # player_details already ignore case etc.
         player_list = league.player_details(player)
         if player_list:
             return player_list[0]['name']['full']
@@ -314,41 +315,88 @@ class Yahoo:
             return None
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_rounds_drafted(self, team_name):
+        try:
+            content = None
+            embed = None
+            league = self.get_league()
+            draft_results = self.get_draft_results()
+            draft_status = league.settings()['draft_status']
+            if draft_status == 'postdraft':
+                team_dict = self.get_team(league, team_name)
+            else:
+                season = league.settings()['season']
+                season = int(season) - 1
+                league = self.get_league(season)
+                team_dict = self.get_team(league, team_name)
+            if team_dict:
+                team = league.to_team(team_dict['team_key'])
+                title = '{} - Rounds Drafted'.format(team_name)
+                footer = 'The round shown is where the player was drafted, not the cost of the keeper'
+                description = '```\n'
+                for player in team.roster():
+                    if player['name'] in draft_results:
+                        round = 'Rd ' + str(draft_results[player['name']]['round'])
+                    else:
+                        round = 'FA/WW'
+                    description += '{:6} {}\n'.format(round, player['name'])
+                description += '```'
+                embed = discord.Embed(title=title, description=description, url=team_dict['url'], color=0xeee657)
+                embed.set_footer(text=footer)
+            else:
+                content = "Sorry, I couldn't find a team with the name **{}**. Team names are case sensitive. Please check the team name and try again.".format(team_name)
+        except Exception as e:
+            logger.error(e)
+        return content, embed
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_keeper_value(self, keeper):
         try:
             league = self.get_league()
             pick = None
             round = None
-            drafted = False
             content = None
+            drafted = False
+            validated = False
         except Exception as e:
             logger.error(e)
             return None
 
         draft_results = self.get_draft_results()
+        validated_player = self.is_valid_player(league, keeper)
+        keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
         for player,value in draft_results.items():
-            try:
-                keeper_lower = re.sub('[^A-Za-z0-9]+', '', keeper).lower()
-                player_lower = re.sub('[^A-Za-z0-9]+', '', player).lower()
-                if player_lower == keeper_lower:
+            player_lower = re.sub('[^A-Za-z0-9]+', '', player).lower()
+            # see if the keeper name requested passed the is_valid_player check
+            if validated_player:
+                if player == validated_player:
                     pick = int(value['pick'])
                     round = int(value['round'])
                     drafted = True
+                    validated = True
                     break
-            except:
-                pass
+                else:
+                    drafted = False
+                    validated = True
+            # help the user out to see if they missed a special character
+            elif player_lower == keeper_lower:
+                pick = int(value['pick'])
+                round = int(value['round'])
+                drafted = True
+                validated = True
+                break
 
-        if drafted:
-            if round == 1 or round == 2:
-                content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(player, pick, round)
+        if validated:
+            if drafted:
+                if round == 1 or round == 2:
+                    content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(player, pick, round)
+                else:
+                    content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(player, pick, round, round - 1)
             else:
-                content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(player, pick, round, round - 1)
+                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(validated_player)
         else:
-            player = self.is_valid_player(league, keeper)
-            if player:
-                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(player)
-            else:
-                content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper)
+            content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper)
+
         return content
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
