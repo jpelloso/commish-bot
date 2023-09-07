@@ -1,2 +1,5 @@
 [default]
 LOG_LEVEL = "INFO"
+DISCORD_GUILD = ""
+DISCORD_TOKEN = ""
+SLEEPER_LEAGUE_ID = ""

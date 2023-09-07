@@ -9,7 +9,6 @@ showenv:
 
 configure:
 	@pip3 install -r requirements.txt
-	@python3 scripts/get_oauth_creds.py
 
 run:
 	@python3 ${MODULE}/${MODULE}.py

@@ -10,6 +10,7 @@ class Misc(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        logger.debug("Misc cog initialized")
 
     @commands.Cog.listener()
     async def on_message(self, message):
