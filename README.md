@@ -5,18 +5,9 @@ A Sleeper Fantasy sports bot for Discord
 
 ## Commands
     $ping                          - Return the latency of the bot
-    $standings                     - Return the standings of the current season
-    $matchups                      - Return the matchups for the current gameweek
-    $playoffs                      - Return details about the playoffs for the current season
-    $trade_deadline                - Return the last possible day for trades to be processed
-    $roster [team]                 - Return the roster of a specific team
-    $drafted [team]                - Return the rounds players on a specific team were drafted in
-    $faab [team]                   - Return the FAAB balance of a specific team
-    $manager [team]                - Return the manager nickname of a specific team
-    $waiver [team]                 - Return the waiver position of a specific team
-    $player_details [player]       - Return the details of a specific player
+    $settings                      - Return the settings for the league
+    $history                       - Return the league history
     $keeper [player]               - Return the round drafted of a specific player
-    $history [year]                - Return the standings from a specific season
     $poll [prompt]                 - Create a poll for the league to vote on
 
 ## Prerequisites

@@ -1,9 +1,9 @@
 import os
 import config
+import discord
 from cogs.meta import Meta
 from cogs.misc import Misc
 from cogs.sleeper import Sleeper
-import discord
 from discord.ext import commands
 
 logger = config.get_logger(__name__)
