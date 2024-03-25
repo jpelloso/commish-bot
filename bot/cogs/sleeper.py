@@ -25,6 +25,11 @@ class Sleeper(commands.Cog):
         logger.info('generate draft results')
         self.sleeper_api.get_draft_results()
 
+    @commands.command('regenerate_player_list')
+    async def regenerate_player_list(self, ctx):
+        logger.info('regenerate_player_list called')
+        self.sleeper_api.get_player_list()
+
     @commands.command('settings')
     async def settings(self, ctx):
         logger.info('settings called')
@@ -51,3 +56,4 @@ class Sleeper(commands.Cog):
             await ctx.send(content=msg)
         else:
             await ctx.send(self.error_message)
+
