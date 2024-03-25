@@ -16,6 +16,7 @@ class Sleeper:
     def __init__(self):
         self.endpoint = 'https://api.sleeper.app'
         self.league_id = config.settings.sleeper_league_id
+        self.previous_league_id = config.settings.previous_league_id
         self.player_id_map = 'player_id_map.json'
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))  
@@ -40,11 +41,15 @@ class Sleeper:
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def is_valid_player(self, player):
-        with open(self.player_id_map, 'r') as f:
-            players = json.load(f)
-        player = self.get_regex_search_name(player)
-        result = any(player in d.values() for d in players.values())
-        return result
+        if os.path.exists(self.player_id_map):
+            with open(self.player_id_map, 'r') as f:
+                players = json.load(f)
+            player = self.get_regex_search_name(player)
+            result = any(player in d.values() for d in players.values())
+            logger.debug('{} -> valid? -> {}'.format(player, result))
+            return result
+        else:
+            logger.error('{} does not exist'.format(self.player_id_map))
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_season(self):
@@ -53,10 +58,24 @@ class Sleeper:
         if league.status_code == 200:
             data = league.json()
             season = data['season']
+            logger.debug(season)
             return season
         else:
             logger.error(self.handle_error_code(league.status_code))
             return None
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_draft_status(self):
+        endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
+        league = requests.get(endpoint, timeout=10)
+        if league.status_code == 200:
+            data = league.json()
+            status = data['status'] # "pre_draft", "drafting", "in_season", "complete"
+            logger.debug(status)
+            return status
+        else:
+            logger.error(self.handle_error_code(league.status_code))
+            return None 
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_settings_bit_value(self, bit):
@@ -69,13 +88,13 @@ class Sleeper:
     def get_settings(self):
         content = None
         embed = None
-        endpoint = "{}/v1/league/{}".format(self.endpoint, self.league_id)
+        endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
         title = ':gear:  League Settings'
         description = ''
         embed = discord.Embed(title=title, description=description, color=0xeee657)
         settings = requests.get(endpoint, timeout=10)
         if settings.status_code == 200:
-            logger.info(settings.json())
+            logger.debug(settings.json())
             data = settings.json()
             embed.add_field(name='League ID', value=data['league_id'], inline=False)
             embed.add_field(name='Roster Positions', value=str(data['roster_positions'])[1:-1].replace("'",""), inline=False)
@@ -87,7 +106,6 @@ class Sleeper:
             embed.add_field(name='Waiver Budget', value=data['settings']['waiver_budget'], inline=False)
             embed.add_field(name='Trade Deadline', value='Week {}'.format(data['settings']['trade_deadline']), inline=False)
             embed.add_field(name='Days to Review Trades', value='{} days'.format(data['settings']['trade_review_days']), inline=False)
-            embed.add_field(name='Veto Votes Needed', value='{} votes'.format(data['settings']['veto_votes_needed']), inline=False)
             pick_trading = self.get_settings_bit_value(data['settings']['pick_trading'])
             embed.add_field(name='Trade Draft Picks', value=pick_trading, inline=False)
             embed.add_field(name='Playoffs Start Week', value='Week {}'.format(data['settings']['playoff_week_start']), inline=False)
@@ -101,43 +119,49 @@ class Sleeper:
         content = 'Yahoo! league history has been imported into Sleeper, but is not accessible via the API. In the Sleeper app, navigate to **Settings > League history** to view all-time stats and history from previous seasons.'
         return content
 
+    
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_list(self):
         endpoint = '{}/v1/players/nfl'.format(self.endpoint)
         local_players = {}
-        player_id_map_file = 'player_id_map.json'
-        if not os.path.exists(player_id_map_file):
-            players = requests.get(endpoint, timeout=60)
-            if players.status_code == 200:
-                for key,values in players.json().items():
-                    name = '{} {}'.format(values['first_name'], values['last_name'])
-                    search = self.get_regex_search_name(name)
-                    local_players[key] = {}
-                    local_players[key]['name'] = name
-                    local_players[key]['search'] = search
-                with open(player_id_map_file, 'w') as fp:
-                    json.dump(local_players, fp, indent=4)
-                    logger.info('created player id map json')
-            else:
-                logger.error(self.handler_error_code(players.status_code))
+        players = requests.get(endpoint, timeout=60)
+        if players.status_code == 200:
+            for key,values in players.json().items():
+                name = '{} {}'.format(values['first_name'], values['last_name'])
+                search = self.get_regex_search_name(name)
+                local_players[key] = {}
+                local_players[key]['name'] = name
+                local_players[key]['search'] = search
+            with open(self.player_id_map, 'w') as fp:
+                json.dump(local_players, fp, indent=4)
+                logger.info('created player id map json')
+        else:
+            logger.error(self.handler_error_code(players.status_code))
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_id(self):
-        endpoint = '{}/v1/league/{}/drafts'.format(self.endpoint, self.league_id)
+        # if draft status for the current season is 'pre_draft' or 'drafting', get the previous season draft id for results
+        if self.get_draft_status() == 'pre_draft' or self.get_draft_status() == 'drafting':
+            league_id = self.previous_league_id
+            season = int(self.get_season()) - 1
+        else:
+            league_id = self.league_id
+            season = self.get_season()
+        endpoint = '{}/v1/league/{}/drafts'.format(self.endpoint, league_id)
         drafts = requests.get(endpoint, timeout=10)
         if drafts.status_code == 200:
             for draft in drafts.json():
-                if draft['season'] == self.get_season():
-                    return draft['draft_id']
+                logger.debug(draft['draft_id'])
+                return draft['draft_id'], season
         else:
             logger.error(self.handler_error_code(drafts.status_code))
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_results(self):
-        draft_id = self.get_draft_id()
+        draft_id, season = self.get_draft_id()
         endpoint = '{}/v1/draft/{}/picks'.format(self.endpoint, draft_id)
         local_draft_results = {}
-        draft_results_file = 'draft_results_{}.json'.format(self.get_season())
+        draft_results_file = 'draft_results_{}.json'.format(season)
         # if the local file doesn't exist, request draft results and create it
         if not os.path.exists(draft_results_file):
             picks = requests.get(endpoint, timeout=10)
@@ -154,6 +178,8 @@ class Sleeper:
                     logger.info('created draft results json')
             else:
                 logger.error(self.handler_error_code(picks.status_code))
+        else:
+            logger.info('draft results already exist, not recreating')
         # read the file and return the draft results json    
         with open(draft_results_file, 'r') as f:
             draft_results = json.load(f)
