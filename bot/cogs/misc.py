@@ -6,6 +6,53 @@ from discord.ext import commands
 
 logger = config.get_logger(__name__)
 
+
+
+
+
+# Configure OpenAI API
+openai.api_key = OPENAI_API_KEY
+
+@client.event
+async def on_ready():
+    print(f'Logged in as {client.user}!')
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    # Check if bot is mentioned
+    if client.user.mentioned_in(message):
+        await handle_openai_response(message)
+        return
+    
+    # Check if bot is directly replied to
+    if message.reference and message.reference.cached_message.author == client.user:
+        await handle_openai_response(message)
+        return
+
+async def handle_openai_response(message):
+    question = message.content
+    
+    # Query OpenAI API
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=question,
+        max_tokens=50
+    )
+    
+    answer = response.choices[0].text.strip()
+    
+    await message.channel.send(answer)
+
+
+
+
+
+
+
+
 class Misc(commands.Cog):
 
     def __init__(self, bot):
