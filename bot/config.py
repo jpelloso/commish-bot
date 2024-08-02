@@ -13,6 +13,7 @@ if not os.environ.get('HEROKU_DEPLOYMENT'):
     os.environ['DISCORD_GUILD'] = settings.DISCORD_GUILD
     os.environ['DISCORD_TOKEN'] = settings.DISCORD_TOKEN
     os.environ['SLEEPER_LEAGUE_ID'] = settings.SLEEPER_LEAGUE_ID
+    os.environ['PREVIOUS_LEAGUE_ID'] = settings.PREVIOUS_LEAGUE_ID
 
 def get_logger(name):
     logger = logging.getLogger(name)
