@@ -1,4 +1,3 @@
-import os
 import config
 import discord
 from cogs.meta import Meta
@@ -22,4 +21,4 @@ async def on_ready():
 async def on_guild_join(guild):
     logger.info('Joined {}'.format(guild.name))
 
-bot.run(os.environ['DISCORD_TOKEN'], reconnect=True)
+bot.run(config.settings.discord_token, reconnect=True)
