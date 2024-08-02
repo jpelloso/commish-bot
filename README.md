@@ -43,14 +43,6 @@ In order to properly configure your bot you will need the following:
 
         make run
 
-### Heroku
-Heroku apps include a [Procfile](Procfile) that specifies the commands that are executed by the app on startup and a [runtime.txt](runtime.txt) file that specifies the python version to use at runtime. The [Procfile](Procfile) should automatically create a Dyno on the **Resources** tab of the Heroku dashboard.
-1. Connect your app to GitHub by navigating to the **Deploy** tab and authenticating Heroku with GitHub
-2. Navigate to the **Settings** section and open up **Config Vars**. Create a environment variable for each entry in the `settings.toml` file in addition to `HEROKU_DEPLOYMENT=True`
-3. Navigate back to the **Deploy** section, choose a branch to deploy from and select **Deploy Branch**
-4. Monitor the startup of the app with `heroku logs --tail -a discord-commish-bot` (requires Heroku CLI)
-    * If you are unable to login via browser from Heroku CLI you can use `heroku login -i` to login directly from the terminal
-
 ## Add Bot to Server
 Follow the [instructions](https://discordpy.readthedocs.io/en/stable/discord.html#inviting-your-bot) below from discord.py to invite the bot to your server:
 1. Make sure you’re logged on to the Discord website.
@@ -60,7 +52,6 @@ Follow the [instructions](https://discordpy.readthedocs.io/en/stable/discord.htm
 5. Tick the “bot” checkbox under “scopes”
 6. Tick the permissions required for your bot to function under “Bot Permissions”
 7. Now the resulting URL can be used to add your bot to a server. Copy and paste the URL into your browser, choose a server to invite the bot to, and click “Authorize”
-
 
 ## Development
 ### Virtual Environments
