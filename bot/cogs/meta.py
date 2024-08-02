@@ -24,9 +24,6 @@ class Meta(commands.Cog):
         description = 'A Sleeper Fantasy Sports Bot for Discord'
         embed = discord.Embed(title=title, description=description, color=0xeee657)
         embed.add_field(name='`$ping`', value='Return the latency of the bot', inline=False)
-        embed.add_field(name='`$settings`', value='Return the settings for the league', inline=False)
-        embed.add_field(name='`$history`', value='Return the league history', inline=False)
-        embed.add_field(name='`$keeper [player]`', value='Return the round drafted of a specific player', inline=False)
         embed.add_field(name='`$poll [prompt]`', value='Create a poll for the league to vote on', inline=False)
         embed.add_field(name='`$regenerate_player_list`', value='Regenerate player list used for player lookups', inline=False)
         await ctx.send(embed=embed)

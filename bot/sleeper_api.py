@@ -77,48 +77,16 @@ class Sleeper:
             return None 
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_settings_bit_value(self, bit):
-        if bit == 1:
-            return "Yes"
-        else:
-            return "No"
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_settings(self):
-        content = None
-        embed = None
         endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
-        title = ':gear:  League Settings'
-        description = ''
-        embed = discord.Embed(title=title, description=description, color=0xeee657)
         settings = requests.get(endpoint, timeout=10)
         if settings.status_code == 200:
             logger.debug(settings.json())
-            data = settings.json()
-            embed.add_field(name='League ID', value=data['league_id'], inline=False)
-            embed.add_field(name='Roster Positions', value=str(data['roster_positions'])[1:-1].replace("'",""), inline=False)
-            embed.add_field(name='Injured Reserved Slots', value=data['settings']['reserve_slots'], inline=False)
-            bench_lock = self.get_settings_bit_value(data['settings']['bench_lock'])
-            embed.add_field(name='Bench Players Lock', value=bench_lock, inline=False)
-            embed.add_field(name='Maximum Keepers', value=data['settings']['max_keepers'], inline=False)
-            embed.add_field(name='Waiver Type', value='FAAB', inline=False)
-            embed.add_field(name='Waiver Budget', value=data['settings']['waiver_budget'], inline=False)
-            embed.add_field(name='Trade Deadline', value='Week {}'.format(data['settings']['trade_deadline']), inline=False)
-            embed.add_field(name='Days to Review Trades', value='{} days'.format(data['settings']['trade_review_days']), inline=False)
-            pick_trading = self.get_settings_bit_value(data['settings']['pick_trading'])
-            embed.add_field(name='Trade Draft Picks', value=pick_trading, inline=False)
-            embed.add_field(name='Playoffs Start Week', value='Week {}'.format(data['settings']['playoff_week_start']), inline=False)
-            embed.add_field(name='Number of Playoff Teams', value='{} teams'.format(data['settings']['playoff_teams']), inline=False)
+            content = settings.json()
         else:
             content = self.handle_error_code(settings.status_code)
-        return content, embed
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_history(self):
-        content = 'Yahoo! league history has been imported into Sleeper, but is not accessible via the API. In the Sleeper app, navigate to **Settings > League history** to view all-time stats and history from previous seasons.'
         return content
-
-    
+ 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_player_list(self):
         endpoint = '{}/v1/players/nfl'.format(self.endpoint)
