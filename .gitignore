@@ -13,3 +13,4 @@ secrets.json
 
 # commish bot files
 draft_results*.json
+player_id_map.json
