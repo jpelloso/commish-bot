@@ -34,23 +34,6 @@ class Sleeper:
             return "Sorry, I'm having trouble getting that right now, please try again later"
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_regex_search_name(self, player):
-        name = re.sub('[^A-Za-z0-9]+', '', player).lower()
-        return name
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def is_valid_player(self, player):
-        if os.path.exists(self.player_id_map):
-            with open(self.player_id_map, 'r') as f:
-                players = json.load(f)
-            player = self.get_regex_search_name(player)
-            result = any(player in d.values() for d in players.values())
-            logger.debug('{} -> valid? -> {}'.format(player, result))
-            return result
-        else:
-            logger.error('{} does not exist'.format(self.player_id_map))
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_season(self):
         endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
         league = requests.get(endpoint, timeout=10)
@@ -86,24 +69,6 @@ class Sleeper:
         else:
             content = self.handle_error_code(settings.status_code)
         return content
- 
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_player_list(self):
-        endpoint = '{}/v1/players/nfl'.format(self.endpoint)
-        local_players = {}
-        players = requests.get(endpoint, timeout=60)
-        if players.status_code == 200:
-            for key,values in players.json().items():
-                name = '{} {}'.format(values['first_name'], values['last_name'])
-                search = self.get_regex_search_name(name)
-                local_players[key] = {}
-                local_players[key]['name'] = name
-                local_players[key]['search'] = search
-            with open(self.player_id_map, 'w') as fp:
-                json.dump(local_players, fp, indent=4)
-                logger.info('created player id map json')
-        else:
-            logger.error(self.handler_error_code(players.status_code))
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_draft_id(self):
@@ -151,33 +116,3 @@ class Sleeper:
         with open(draft_results_file, 'r') as f:
             draft_results = json.load(f)
         return draft_results
-
-    @cached(cache=TTLCache(maxsize=1024, ttl=600))
-    def get_keeper_value(self, keeper):
-        pick = None
-        round = None
-        content = None
-        draft_results = self.get_draft_results()
-        validated = self.is_valid_player(keeper)
-        if validated:
-            for player,values in draft_results.items():
-                keeper_lower = self.get_regex_search_name(keeper)
-                player_lower = self.get_regex_search_name(player)
-                if player_lower == keeper_lower:
-                    pick = int(values['pick'])
-                    round = int(values['round'])
-                    drafted = True
-                    break
-                else:
-                    drafted = False
-            if drafted:
-                if round == 1 or round == 2:
-                    content = '**{}** was drafted at pick #{} in round {}. He is not an eligible keeper.'.format(player, pick, round)
-                else:
-                    content = '**{}** was drafted at pick #{} in round {}. He would cost a pick in **round {}** to keep for next season.'.format(player, pick, round, round - 1)
-            else:
-                content = '**{}** was not drafted. He would cost a pick in the **7th or 8th round** to keep for next season.'.format(keeper.title())
-        else:
-            content = "Sorry, I couldn't find a player with the name **{}**. Please check the player name and try again.".format(keeper.title())
-
-        return content

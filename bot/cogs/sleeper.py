@@ -32,24 +32,6 @@ class Sleeper(commands.Cog):
         logger.info('regenerate_player_list called')
         self.sleeper_api.get_player_list()
 
-    @commands.command('settings')
-    async def settings(self, ctx):
-        logger.info('settings called')
-        msg, embed = self.sleeper_api.get_settings()
-        if msg or embed:
-            await ctx.send(content=msg, embed=embed)
-        else:
-            await ctx.send(self.error_message)
-
-    @commands.command('keeper')
-    async def keeper(self, ctx, *, content:str):
-        logger.info('keeper called')
-        msg = self.sleeper_api.get_keeper_value(content)
-        if msg:
-            await ctx.send(content=msg)
-        else:
-            await ctx.send(self.error_message)
-
     @commands.Cog.listener()
     async def on_message(self, message):
         if self.bot.user.mentioned_in(message):
@@ -67,4 +49,3 @@ class Sleeper(commands.Cog):
             )
 
             await message.channel.send(completion.choices[0].message.content)
-
