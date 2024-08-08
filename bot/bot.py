@@ -1,7 +1,6 @@
 import config
 import discord
 from cogs.meta import Meta
-from cogs.misc import Misc
 from cogs.sleeper import Sleeper
 from discord.ext import commands
 
@@ -13,7 +12,6 @@ bot.remove_command('help')
 @bot.event
 async def on_ready():
     await bot.add_cog(Meta(bot))
-    await bot.add_cog(Misc(bot))
     await bot.add_cog(Sleeper(bot))
     logger.info('Bot is ready')
 

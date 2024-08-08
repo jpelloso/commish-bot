@@ -1,8 +1,6 @@
 import config
-import discord
 import json
 import os
-import re
 import requests
 from cachetools import cached, TTLCache
 
@@ -15,8 +13,6 @@ class Sleeper:
     def __init__(self):
         self.endpoint = 'https://api.sleeper.app'
         self.league_id = config.settings.sleeper_league_id
-        self.previous_league_id = config.settings.previous_league_id
-        self.player_id_map = 'player_id_map.json'
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))  
     def handler_error_code(self, code):
@@ -60,6 +56,19 @@ class Sleeper:
             return None 
 
     @cached(cache=TTLCache(maxsize=1024, ttl=600))
+    def get_previous_league_id(self):
+        endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
+        league = requests.get(endpoint, timeout=10)
+        if league.status_code == 200:
+            data = league.json()
+            previous_league_id = data['previous_league_id'] # "pre_draft", "drafting", "in_season", "complete"
+            logger.debug(previous_league_id)
+            return previous_league_id
+        else:
+            logger.error(self.handle_error_code(league.status_code))
+            return None 
+
+    @cached(cache=TTLCache(maxsize=1024, ttl=600))
     def get_settings(self):
         endpoint = '{}/v1/league/{}'.format(self.endpoint, self.league_id)
         settings = requests.get(endpoint, timeout=10)
@@ -74,7 +83,7 @@ class Sleeper:
     def get_draft_id(self):
         # if draft status for the current season is 'pre_draft' or 'drafting', get the previous season draft id for results
         if self.get_draft_status() == 'pre_draft' or self.get_draft_status() == 'drafting':
-            league_id = self.previous_league_id
+            league_id = self.get_previous_league_id()
             season = int(self.get_season()) - 1
         else:
             league_id = self.league_id

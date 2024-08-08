@@ -13,24 +13,12 @@ class Sleeper(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.sleeper_api = sleeper_api.Sleeper()
-        self.generate_player_list()
         self.generate_draft_results()
         logger.debug("Sleeper cog initialized")
-
-    def generate_player_list(self):
-        # Please use this call sparingly, as it is intended only to be used once per day 
-        # at most to keep your player IDs updated. The average size of this query is 5MB. 
-        logger.info('generate player list')
-        self.sleeper_api.get_player_list()
 
     def generate_draft_results(self):
         logger.info('generate draft results')
         self.sleeper_api.get_draft_results()
-
-    @commands.command('regenerate_player_list')
-    async def regenerate_player_list(self, ctx):
-        logger.info('regenerate_player_list called')
-        self.sleeper_api.get_player_list()
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -39,8 +27,7 @@ class Sleeper(commands.Cog):
             draft = str(self.sleeper_api.get_draft_results())
             logger.info('replying to a bot mention')
             messages = [
-                    {"role": "system", "content": "You only answer questions about the Sleeper league. Here are the league settings: {}".format(settings)},
-                    {"role": "system", "content": "You only answer questions about the Sleeper keeper league. Players cannot keep players drafted in the first or seconds rounds. A player's keeper cost is one round higher than when they were drafted. If a player was not drafted, they would be a 7th or 8th round pick to keep. Here are the draft results: {}".format(draft)},
+                    {"role": "system", "content": "You only answer questions about the Sleeper league. Here are the league settings: {}. This is a keeper league. Players drafted in rounds one or two cannot be kept. A player's keeper cost is one round high than when they were drafted. If a player was not drafted, it is a 7th or 8th round pick. Max of two keepers. Keep answers concise, don't repeat rules each response. Here are the draft results {}.".format(settings, draft)},
                     {"role": "user", "content": message.content}
                ]
             completion = self.client.chat.completions.create(
