@@ -5,10 +5,9 @@ A Sleeper Fantasy sports bot for Discord
 
 ## Commands
     $ping                          - Return the latency of the bot
-    $settings                      - Return the settings for the league
-    $history                       - Return the league history
-    $keeper [player]               - Return the round drafted of a specific player
     $poll [prompt]                 - Create a poll for the league to vote on
+
+Mention `@CommishBot` in a message with a question about the league or keeper settings to get the requested information  
 
 ## Prerequisites
 In order to properly configure your bot you will need the following:
@@ -36,7 +35,7 @@ In order to properly configure your bot you will need the following:
         cd commish-bot
         
 2. Configure the bot
-   * Update `settings.toml` with the Discord token, Discord guild ID, and Sleeper league ID
+   * Update `settings.toml` with the Discord token, Discord guild ID, Sleeper league ID, and OpenAI token
    * Run `make configure` from the root directory to install python requirements
 
 3. Run the bot
