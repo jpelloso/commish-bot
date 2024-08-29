@@ -1,3 +1,4 @@
+import re
 import config
 import discord
 from discord.ext import commands
@@ -39,7 +40,9 @@ class Meta(commands.Cog):
         logger.info('poll called')
         dev_channel = 991893190221234176
         polls_channel = 1009118603322335272
+        logger.debug('current channel for poll: {}'.format(ctx.channel.id))
         if ctx.channel.id == dev_channel or ctx.channel.id == polls_channel:
+            logger.debug('valid poll channel')
             author = re.sub('\#[0-9]+', '', str(ctx.message.author))
             title = '{} created a poll'.format(author)
             vote = 'Click the ✅ or ❌ reaction below to cast your vote!'
@@ -52,5 +55,6 @@ class Meta(commands.Cog):
             await msg.add_reaction(yes_emoji)
             await msg.add_reaction(no_emoji)
         else:
+            logger.debug('invalid poll channel')
             msg = 'Sorry, but you are only allowed to create polls in the <#1009118603322335272> channel.'
             await ctx.send(content=msg)
