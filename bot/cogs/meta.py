@@ -1,3 +1,4 @@
+import re
 import config
 import discord
 from discord.ext import commands
@@ -24,11 +25,7 @@ class Meta(commands.Cog):
         description = 'A Sleeper Fantasy Sports Bot for Discord'
         embed = discord.Embed(title=title, description=description, color=0xeee657)
         embed.add_field(name='`$ping`', value='Return the latency of the bot', inline=False)
-        embed.add_field(name='`$settings`', value='Return the settings for the league', inline=False)
-        embed.add_field(name='`$history`', value='Return the league history', inline=False)
-        embed.add_field(name='`$keeper [player]`', value='Return the round drafted of a specific player', inline=False)
         embed.add_field(name='`$poll [prompt]`', value='Create a poll for the league to vote on', inline=False)
-        embed.add_field(name='`$regenerate_player_list`', value='Regenerate player list used for player lookups', inline=False)
         await ctx.send(embed=embed)
 
     @commands.command('ping')
@@ -37,3 +34,27 @@ class Meta(commands.Cog):
         # Included in the Discord.py library
         latency = self.bot.latency
         await ctx.send(latency)
+
+    @commands.command('poll')
+    async def poll(self, ctx, *, content:str):
+        logger.info('poll called')
+        dev_channel = 991893190221234176
+        polls_channel = 1009118603322335272
+        logger.debug('current channel for poll: {}'.format(ctx.channel.id))
+        if ctx.channel.id == dev_channel or ctx.channel.id == polls_channel:
+            logger.debug('valid poll channel')
+            author = re.sub('\#[0-9]+', '', str(ctx.message.author))
+            title = '{} created a poll'.format(author)
+            vote = 'Click the ✅ or ❌ reaction below to cast your vote!'
+            embed = discord.Embed(title=title, description=content, color=0xeee657)
+            embed.set_footer(text=vote)
+            await ctx.message.delete()
+            msg = await ctx.send(embed=embed)
+            yes_emoji = '✅'
+            no_emoji = '❌'
+            await msg.add_reaction(yes_emoji)
+            await msg.add_reaction(no_emoji)
+        else:
+            logger.debug('invalid poll channel')
+            msg = 'Sorry, but you are only allowed to create polls in the <#1009118603322335272> channel.'
+            await ctx.send(content=msg)
