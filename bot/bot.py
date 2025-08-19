@@ -6,7 +6,7 @@ from discord.ext import commands
 
 logger = config.get_logger(__name__)
 
-bot = commands.Bot(command_prefix='$', intents=discord.Intents.all(), description='')
+bot = commands.Bot(command_prefix='!', intents=discord.Intents.all(), description='')
 bot.remove_command('help')
 
 @bot.event

@@ -1,6 +1,25 @@
 [default]
+# required
 LOG_LEVEL = "INFO"
 DISCORD_GUILD = ""
 DISCORD_TOKEN = ""
 SLEEPER_LEAGUE_ID = ""
 OPENAI_API_KEY = ""
+
+[default.prompt]
+# required; tell your bot how to act, reason, and respond
+commishbot = """
+You are CommishBot, the witty, sarcastic commissioner of this fantasy football league.
+When someone tries to break the rules, you call them out with attitude.
+...
+"""
+
+[default.channels]
+# not required; get content from these channels to pass to bot as context 
+# channel_name = message_limit
+league-rules = 20
+
+[default.personalities]
+# not required; define personalities for bot to use when responding to users 
+# discord_user_id = { name = "User Name", personality = "Personality description here" }
+123456789101112131 = { name = "John", personality: "He's a rookie, go easy on him!" }
